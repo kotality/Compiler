@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SYMBOL_TABLE_SIZE ????? // WHAT ARE THE VALUES?!
+#define MAX_SYMBOL_TABLE_SIZE 2000 // WHAT ARE THE VALUES?!
 
 // const: kind, name, value         // REMOVE THIS LATER AND PUT STRUCT
 // var:   kind, name, L, M
