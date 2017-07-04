@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX_SYMBOL_TABLE_SIZE 2000 // WHAT ARE THE VALUES?!
+#define MAX_SYMBOL_TABLE_SIZE 2000
 
 // const: kind, name, value         // REMOVE THIS LATER AND PUT STRUCT
 // var:   kind, name, L, M
@@ -45,96 +45,101 @@ void program()
     token = getNextToken();
     block();
 
+    // Period
     if (token != periodsym)
         errorMessage(9);    // Period expected
 }
 
-void block()
+void block()        // possibly change to int block()?
 {
+    // Const
     if (token == constsym)
     {
         while (token == commasym)
         {
             token = getNextToken();
             if (token != identsym)
-                errorMessage(#######);
+                errorMessage(4);        // const, var, procedure must be followed by identifier
             
             token = getNextToken();
             if (token != eqlsym)
-                errorMessage(#######);
+                errorMessage(3);        // Identifier must be followed by =
             
             token = getNextToken();
             if (token != numbersym) 
-                errorMessage(#######);
+                errorMessage(2);        // = must be followed by a number
 
             token = getNextToken();
         }
 
         if (token != semicolonsym)
-            errorMessage(##########);
+            errorMessage(5);            // Semicolon or comma missing
         
         token = getNextToken();
     }
 
+    // Int
     if (token == intsym)
     {
         while (token == commasym)
         {
             token = getNextToken();
             if (token != identsym)
-                errorMessage(###);
+                errorMessage(4);        // const, var, procedure must be followed by identifier
             
             token = getNextToken();
         }
 
         if (token != semicolonsym)
-            errorMessage(#####);
+            errorMessage(5);            // Semicolon or comma missing
         
         token = getNextToken();
     }
     
-    while (token == procsym)                // where is procsym?
+    // Procedure
+    while (token == procsym)                                // where is procsym?
     {
         token = getNextToken();
         if (token != identsym)
-            errorMessage(4);    //const, var, procedure must be followed by identifier.
+            errorMessage(4);            //const, var, procedure must be followed by identifier.
         
         token = getNextToken();
         if (token != semicolonsym)
-             errorMessage(5);    // Semicolon or comma missing.
+             errorMessage(5);           // Semicolon or comma missing.
 
         token = getNextToken();
-        block();
+        block(); // token = block(token) possibly
         if (token != semicolonsym)
-            errorMessage(5);    // Semicolon or comma missing.
+            errorMessage(5);            // Semicolon or comma missing.
 
         token = getNextToken();
     }
 
-    statement();
+    statement(); // token = statement(token) possibly
 }
 
-void statement()
+void statement()        // possibly change to int statement()?
 {
-    token = getNextToken();
-
+    // COMMENT COMMENT
     if (token == identsym)
     {
         token = getNextToken();
         if (token != becomesym)
-            errorMessage(#####);
+            errorMessage(19);           // Incorrect symbol following statement
 
         token = getNextToken();
-        expression();
+        expression(); // token = expresssion(token)
     }
+    // Call
     else if (token == callsym)
     {
         token = getNextToken();
         if (token != identsym)
-            errorMessage(#####);
+            errorMessage(14);           // call must be followed by an identifier
 
         token = getNextToken();
     }
+    // Begin 
     else if (token == beginsym)
     {
         token = getNextToken();
@@ -147,28 +152,30 @@ void statement()
         }
 
         if (token != endsym)
-            errorMessage(#####);
+            errorMessage(26);           // end expected
 
         token = getNextToken();
     }
+    // If
     else if(token == ifsym)
     {
         token = getNextToken();
         condtition();
 
         if (token != thensym)
-            errorMessage(####);
+            errorMessage(16);           // then expected
 
         token = getNextToken();
         statement();
     }
+    // While
     else if(token == whilesym)
     {
         token = getNextToken();
         condtition();
 
         if (token != dosym)
-            errorMessage(####);
+            errorMessage(18);           // do expected
         
         token = getNextToken();
         statement();
@@ -177,6 +184,7 @@ void statement()
 
 void condtition()
 {
+    // Odd
     if (token == oddsym)
     {
         token = getNextToken();
@@ -188,7 +196,7 @@ void condtition()
 
         if ((token != eqlsym) && (token != neqsym) && (token != lessym) && 
             (token != leqsym) && (token != gtrsym) && (token != geqsym))
-            errorMessage(######);
+            errorMessage(20);           // Relational operator expected
 
         token = getNextToken();
         expression();
@@ -197,6 +205,7 @@ void condtition()
 
 void expression()
 {
+    // Plus and Minus
     if (token == plussym || token == minussym)
         token = getNextToken();
 
@@ -213,7 +222,8 @@ void term()
 {
     factor();
 
-    while (token = multsym || token == slashsym)
+    // Multiply and Divide
+    while (token == multsym || token == slashsym)
     {
         token = getNextToken();
         factor();
@@ -232,10 +242,12 @@ void factor()
         expression();
 
         if (token != rparentsym)
-            errorMessage(######);
+            errorMessage(22);           // Right parenthesis missing
         
         token = getNextToken();
     }
+    else
+        errorMessage(27);               // Invalid factor
 }
 
 //Error messages for the PL/0 Parser
@@ -247,7 +259,7 @@ void errorMessage(int error)
             printf("Use = instead of :=.\n");
             break;
         case 2:
-            printf("must be followed by a number.\n");
+            printf("= must be followed by a number.\n");
             break;
         case 3:
             printf("Identifier must be followed by =.\n");
@@ -317,12 +329,18 @@ void errorMessage(int error)
         case 25: 
             printf("This number is too large.\n");
             break;
+        case 26:
+            printf("end expected.\n");
+            break;
+        case 27:
+            printf("Invalid factor.\n");
+            break;
         default:
             printf("General Error. Need to make an error message for this.\n");
     }
 }
 
-int main()
+int parser()
 {
     return 0;
 }
