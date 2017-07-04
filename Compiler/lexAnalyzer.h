@@ -2,11 +2,6 @@
 	Lexical Analyzer
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-
 #define MAX_NUMBER_LENGTH 5
 #define MAX_IDENTIFIER_LENGTH 11
 #define MAX_CODE_LENGTH 32768
@@ -569,7 +564,7 @@ void echoInput()
 	fprintf(outFile, "Source Program:\n%s\n\n", inputChars);
 }
 
-int main(int argc, char ** argv)
+int lexicalAnalyzer(int argc, char ** argv)
 {
 	if (argc != 3)
 	{

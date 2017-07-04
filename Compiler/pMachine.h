@@ -2,9 +2,6 @@
 // COP 3402 - Summer 2017
 // HW #1 - pMachine
 
-#include <stdlib.h>
-#include <stdio.h>
-
 // Constant values
 #define MAX_STACK_HEIGHT 2000
 #define MAX_CODE_LENGTH 500
@@ -346,7 +343,7 @@ int ISA(int opcode, int L, int M)
     }
 }
 
-int main()
+int pMachine()
 {
     int count;
     inFile = fopen("vminput.txt", "r");
