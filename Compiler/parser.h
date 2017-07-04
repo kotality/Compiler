@@ -2,10 +2,6 @@
 // COP 3402 - Summer 2017
 // HW #2 - Parser and Code Generator
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #define MAX_SYMBOL_TABLE_SIZE 2000
 
 // const: kind, name, value         // REMOVE THIS LATER AND PUT STRUCT
@@ -23,6 +19,7 @@ typedef struct
 // Some initial values and global variables
 symbol_table[MAX_SYMBOL_TABLE_SIZE];
 int token;
+int tokenArray[MAX_CODE_LENGTH];
 
 // Function prototypes
 void program();
@@ -37,7 +34,8 @@ void errorMessage();
 
 void getNextToken()
 {
-
+    token = symbols[token_num].kind;
+	token_num++;
 }
 
 void program()
