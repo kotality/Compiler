@@ -1,5 +1,0 @@
-Symbolic Lexeme List:
-constsym varsym identsym procedure callsym beginsym endsym ifsym thensym identsym else whilesym dosym readsym writesym plussym minussym multsym slashsym lparentsym rparentsym eqlsym commasym periodsym lessym gtrsym semicolonsym neqsym leqsym geqsym identsym hello123 numbersym 65 becomesym 
-
-Lexeme List:
-28 29 2 procedure 27 21 22 23 24 2 else 25 26 32 31 4 5 6 7 15 16 9 17 19 11 13 18 10 12 14 2 hello123 3 65 20 
