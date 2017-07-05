@@ -1,0 +1,37 @@
+/*
+
+This is a program that simply uses a while loop to count up to 10,
+printing the current counter value at each step.
+
+The output from running this should be along the lines of the following:
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+
+*/
+
+const increment = 1, stopValue = 10;
+var counter;
+begin
+	/* Initialize [counter] to zero */
+	counter := 0;
+
+	/* While the counter is less than [stopValue], do the thing! */
+	while counter < stopValue do
+	begin
+
+		/* Increment counter by [increment] */
+		counter := counter + increment;
+
+		/* Print the current value of counter out */
+		write counter;
+
+	end
+end.
