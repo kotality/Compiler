@@ -9,6 +9,8 @@
 #include "parser.h"
 #include "header.h"
 
+//TEST COMMENT
+
 int main(int argc, char ** argv)
 {
     int i, lex = 0, parse = 0, vm = 0;
