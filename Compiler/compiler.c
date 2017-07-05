@@ -8,6 +8,8 @@
 #include "lexAnalyzer.h"
 #include "parser.h"
 
+//NEW MESSAGE
+
 int main(int argc, char ** argv)
 {
     int i, lex = 0, parse = 0, vm = 0;
