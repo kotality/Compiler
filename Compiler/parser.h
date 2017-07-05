@@ -4,6 +4,18 @@
 
 #include "header.h"
 
+// const: kind, name, value         // REMOVE THIS LATER AND PUT STRUCT
+// var:   kind, name, L, M
+// proc:  kind, name, L, M
+typedef struct
+{
+    int kind;           // const = 1, var = 2, proc = 3
+    char name[10];      // name up to 11 characters
+    int val;            // number (ASCII value)
+    int level;          // L level
+    int addr;           // M address
+}symbol;
+
 // Some initial values and global variables
 symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
 int tokenArray[MAX_CODE_LENGTH];

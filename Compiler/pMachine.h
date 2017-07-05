@@ -19,6 +19,8 @@ int PC = 0;
 instruction IR;
 int stack[MAX_STACK_HEIGHT] = {0};
 instruction code[MAX_CODE_LENGTH];
+FILE *inFile;
+FILE *outFile;
 
 // Function prototypes
 void fetch();                          
@@ -340,23 +342,23 @@ int ISA(int opcode, int L, int M)
 
 int pMachine(int flag)
 {
-    inFile = fopen(VMinFile, "r");
-    outFile = fopen(VMoutFile, "w");
+    int count;
+    inFile = fopen("vminput.txt", "r");
+    outFile = fopen("vmoutput.txt", "w");
     
-    if (VMinFile == NULL)
-        printf("Couldn't open input file for VM. Make sure it's called 'VMinFile.txt'\n");
-    if (VMoutFile == NULL)
-        printf("Couldn't open output file for VM\n");
+    if (inFile == NULL)
+        printf("Couldn't open input file. Make sure it's called 'vminput.txt'\n");
+    if (outFile == NULL)
+        printf("Couldn't open output file\n");
 
     if (flag == 1)
     {
         printProgram();
-
         execute();
     }
-    
-    fclose(VMinFile);
-    fclose(VMoutFile);
+
+    fclose(inFile);
+    fclose(outFile);
 
     return 0;
 }
