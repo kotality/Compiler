@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "pmachine.h": "c",
+        "parser.h": "c"
+    }
+}
