@@ -328,15 +328,18 @@ void errorMessage(int error)
     }
 }
 
-int parser()
+int parser(int flag)
 {
-    inFile = fopen("pInput.txt", "r");
-    outFile = fopen("pOutput.txt", "w");
+    inFileParser = fopen(inputFile, "r");
+    outFileParser = fopen(outputFile, "w");
     
     if (inFile == NULL)
-        printf("Couldn't open input file. Make sure it's called 'pInput.txt'\n");
+        printf("Couldn't open input file. Make sure it's called 'input.txt'\n");
     if (outFile == NULL)
         printf("Couldn't open output file\n");
+
+    if (flag == 1)
+        program();
 
     fclose(inFile);
     fclose(outFile);

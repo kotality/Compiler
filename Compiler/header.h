@@ -11,6 +11,14 @@
 #define MAX_IDENTIFIER_LENGTH 11
 #define MAX_SYMBOL_TABLE_SIZE 2000
 
+// Globals for input and output files
+FILE *VMinFile;
+FILE *VMoutFile;
+FILE *leXinFile;
+FILE *leXoutFile;
+FILE *PinFile;
+FILE *PoutFile;
+
 // const: kind, name, value         // REMOVE THIS LATER AND PUT STRUCT
 // var:   kind, name, L, M
 // proc:  kind, name, L, M

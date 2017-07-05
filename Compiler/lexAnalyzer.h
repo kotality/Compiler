@@ -164,9 +164,6 @@ int ip = 0;
 char inputChars[MAX_CODE_LENGTH];
 int inputCharsSize;
 
-//The output file
-FILE * outFile;
-
 //Gets a character from the input; enforces that the character is valid iff ignoreValidity is 0.
 char getChar(int ignoreValidity)
 {	
@@ -220,8 +217,8 @@ void addToBuffer(char theChar)
 //This method opens the input and output files, and also reads in all the data from the input file.
 void openFiles(char * inputFile, char * outputFile)
 {
-	FILE * inFile = fopen(inputFile, "r");
-	outFile = fopen(outputFile, "w");
+	leXinFile = fopen(inputFile, "r");
+	leXoutFile = fopen(outputFile, "w");
 
 	fseek(inFile, 0, SEEK_END);
 	int inputSize = ftell(inFile);
@@ -492,7 +489,7 @@ void echoInput()
 	fprintf(outFile, "Source Program:\n%s\n\n", inputChars);
 }
 
-int lexicalAnalyzer(int argc, char ** argv)
+int lexicalAnalyzer(int flag)
 {
 	if (argc != 3)
 	{
@@ -504,6 +501,8 @@ int lexicalAnalyzer(int argc, char ** argv)
 	//Uncomment this to print out the input program as well...
 	//echoInput();
 	
-	processText();
+	if (flag == 1)
+		processText();
+
 	return 0;
 }
