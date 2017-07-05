@@ -51,7 +51,7 @@
                     "C:/MinGW/include",
                     "C:/MinGW/lib/gcc/mingw32/5.3.0"
                 ],
-                "limitSymbolsToIncludedHeaders": false,
+                "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             },
             "intelliSenseMode": "msvc-x64"
