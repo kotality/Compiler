@@ -3,8 +3,6 @@
 // HW #2 - Parser and Code Generator
 // Main file for compiler driver
 
-// TEST PUSH REMOTE
-
 #include <stdio.h>
 #include "pMachine.h"
 #include "lexAnalyzer.h"
