@@ -8,7 +8,7 @@
 #include "lexAnalyzer.h"
 #include "parser.h"
 
-//NEW MESSAGE
+//NEW MESSAGE2
 
 int main(int argc, char ** argv)
 {
