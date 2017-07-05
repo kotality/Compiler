@@ -3,13 +3,77 @@
 */
 
 #include "header.h"
+//Internal representation stuff
+int nulsym = 1, identsym = 2, numbersym = 3, plussym = 4,
+minussym = 5, multsym = 6, slashsym = 7, oddsym = 8, eqlsym = 9,
+neqsym = 10, lessym = 11, leqsym = 12, gtrsym = 13, geqsym = 14,
+lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
+periodsym = 19, becomesym = 20, beginsym = 21, endsym = 22, ifsym = 23,
+thensym = 24, whilesym = 25, dosym = 26, callsym = 27, constsym = 28,
+varsym = 29, writesym = 31, readsym = 32;
+
+//Internal representation mapping, from integer to string.
+char IRMapping[34][64] = {
+"ZERO",
+"nulsym",
+"identsym",
+"numbersym",
+"plussym",
+"minussym",
+"multsym",
+"slashsym",
+"oddsym",
+"eqlsym",
+"neqsym",
+"lessym",
+"leqsym",
+"gtrsym",
+"geqsym",
+"lparentsym",
+"rparentsym",
+"commasym",
+"semicolonsym",
+"periodsym",
+"becomesym",
+"beginsym",
+"endsym",
+"ifsym",
+"thensym",
+"whilesym",
+"dosym",
+"callsym",
+"constsym",
+"varsym",
+"?",
+"writesym",
+"readsym",
+"?",
+
+};
+
+//List of symbols allowed
+char symbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':'};
+char reserved[14][32] = {
+"const",
+"var",
+"?",
+"call",
+"begin",
+"end",
+"if",
+"then",
+"?",
+"while",
+"do",
+"read",
+"write",
+"odd"
+};
 
 //Returns the index in reserved of the string pointed to by [identifier].
 int reservedIndex(char * identifier)
 {
-	int i;
-
-	for(i = 0; i < 14; i++)
+	for(int i = 0; i < 14; i++)
 	{
 		if (strcmp(reserved[i], identifier) == 0)
 		{
@@ -129,9 +193,7 @@ int isInvisible(char theChar)
 //Returns 1 iff [theChar] is a valid symbol, 0 otherwise.
 int isSymbol(char theChar)
 {
-	int i;
-
-	for(i = 0; i < 13; i++)
+	for(int i = 0; i < 13; i++)
 	{
 		if (symbols[i] == theChar)
 			return 1;
@@ -163,6 +225,9 @@ void throwError(char * message)
 int ip = 0;
 char inputChars[MAX_CODE_LENGTH];
 int inputCharsSize;
+
+//The output file
+FILE * outFile;
 
 //Gets a character from the input; enforces that the character is valid iff ignoreValidity is 0.
 char getChar(int ignoreValidity)
@@ -196,9 +261,8 @@ char buffer[16];
 //Empty out that buffer!
 void clearBuffer()
 {
-	int i;
 	bp = 0;
-	for(i = 0; i < 16; i++)
+	for(int i = 0; i < 16; i++)
 	{
 		buffer[i] = '\0';
 	}
@@ -217,8 +281,8 @@ void addToBuffer(char theChar)
 //This method opens the input and output files, and also reads in all the data from the input file.
 void openFiles(char * inputFile, char * outputFile)
 {
-	leXinFile = fopen(inputFile, "r");
-	leXoutFile = fopen(outputFile, "w");
+	FILE * inFile = fopen(inputFile, "r");
+	outFile = fopen(outputFile, "w");
 
 	fseek(inFile, 0, SEEK_END);
 	int inputSize = ftell(inFile);
@@ -240,9 +304,7 @@ char symbolicLexemeList[MAX_CODE_LENGTH];
 //Overwrite all data in the lexeme output arrays!
 void clearLexemeOutput()
 {
-	int i;
-
-	for(i = 0; i < MAX_CODE_LENGTH; i++)
+	for(int i = 0; i < MAX_CODE_LENGTH; i++)
 	{
 		lexemeTable[i] = '\0';
 		lexemeList[i] = '\0';
@@ -489,7 +551,7 @@ void echoInput()
 	fprintf(outFile, "Source Program:\n%s\n\n", inputChars);
 }
 
-int lexicalAnalyzer(int flag)
+int lexAnalyzer(int argc, char ** argv, int flag)
 {
 	if (argc != 3)
 	{
@@ -503,6 +565,5 @@ int lexicalAnalyzer(int flag)
 	
 	if (flag == 1)
 		processText();
-
 	return 0;
 }
