@@ -9,7 +9,7 @@
 #include "parser.h"
 #include "header.h"
 
-//TEST COMMENT
+//TEST COMMENT2
 
 int main(int argc, char ** argv)
 {
