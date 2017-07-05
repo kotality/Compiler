@@ -2,10 +2,7 @@
 // COP 3402 - Summer 2017
 // HW #1 - pMachine
 
-// Constant values
-#define MAX_STACK_HEIGHT 2000
-#define MAX_CODE_LENGTH 500
-#define MAX_LEXI_LEVELS 3
+#include "header.h"
 
 // Struct
 typedef struct
@@ -345,7 +342,6 @@ int ISA(int opcode, int L, int M)
 
 int pMachine()
 {
-    int count;
     inFile = fopen("vminput.txt", "r");
     outFile = fopen("vmoutput.txt", "w");
     

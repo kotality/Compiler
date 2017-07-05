@@ -2,24 +2,14 @@
 // COP 3402 - Summer 2017
 // HW #2 - Parser and Code Generator
 
-#define MAX_SYMBOL_TABLE_SIZE 2000
-
-// const: kind, name, value         // REMOVE THIS LATER AND PUT STRUCT
-// var:   kind, name, L, M
-// proc:  kind, name, L, M
-typedef struct
-{
-    int kind;           // const = 1, var = 2, proc = 3
-    char name[10];      // name up to 11 characters
-    int val;            // number (ASCII value)
-    int level;          // L level
-    int addr;           // M address
-}symbol;
+#include "header.h"
 
 // Some initial values and global variables
-symbol_table[MAX_SYMBOL_TABLE_SIZE];
-int token;
+symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
 int tokenArray[MAX_CODE_LENGTH];
+int token;
+int tokenVal = 0;
+int symVal = 0;
 
 // Function prototypes
 void program();
@@ -34,8 +24,8 @@ void errorMessage();
 
 void getNextToken()
 {
-    token = symbols[token_num].kind;
-	token_num++;
+    token = tokenArray[tokenVal];
+	tokenVal++;
 }
 
 void program()
@@ -48,7 +38,7 @@ void program()
         errorMessage(9);    // Period expected
 }
 
-void block()        // possibly change to int block()?
+void block()            
 {
     // Const
     if (token == constsym)
@@ -106,17 +96,17 @@ void block()        // possibly change to int block()?
              errorMessage(5);           // Semicolon or comma missing.
 
         token = getNextToken();
-        block(); // token = block(token) possibly
+        block();
         if (token != semicolonsym)
             errorMessage(5);            // Semicolon or comma missing.
 
         token = getNextToken();
     }
 
-    statement(); // token = statement(token) possibly
+    statement(); 
 }
 
-void statement()        // possibly change to int statement()?
+void statement()        
 {
     // COMMENT COMMENT
     if (token == identsym)
@@ -126,7 +116,7 @@ void statement()        // possibly change to int statement()?
             errorMessage(19);           // Incorrect symbol following statement
 
         token = getNextToken();
-        expression(); // token = expresssion(token)
+        expression(); 
     }
     // Call
     else if (token == callsym)
@@ -340,5 +330,16 @@ void errorMessage(int error)
 
 int parser()
 {
+    inFile = fopen("pInput.txt", "r");
+    outFile = fopen("pOutput.txt", "w");
+    
+    if (inFile == NULL)
+        printf("Couldn't open input file. Make sure it's called 'pInput.txt'\n");
+    if (outFile == NULL)
+        printf("Couldn't open output file\n");
+
+    fclose(inFile);
+    fclose(outFile);
+
     return 0;
 }
