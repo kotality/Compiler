@@ -370,7 +370,7 @@ int parser(int flag)
 {
     int value;
 
-    inFileParser = fopen("count.txt", "r");
+    inFileParser = fopen("parseInput_count.txt", "r");
     outFileParser = fopen("parseOutput.txt", "w");
     
     if (inFile == NULL)

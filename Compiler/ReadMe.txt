@@ -1,6 +1,6 @@
 Kenia Castro
 COP 3402 - Summer 2017
-HW #2 Parser - Code Generator
+HW #2 Parser - Parser & Code Generator
 ReadMe File
 
 ================================================================================
@@ -10,15 +10,31 @@ ReadMe File
 2.  pMachine.h
 3.  lexAnalyzer.h
 4.  parser.h
+5.  header.h
+6.  vminput.txt
+7.  vmoutput.txt
+8.  lexInput.txt
+9.  lexOutput.txt
+10. parseInput.txt
+11. parseOutput.txt
+
 
 ================================================================================
 								| Instructions |
 
-1. Compile the file "compiler.c" at the command line by typing:
+1. The input file names are hard-coded. Please make sure the input files being 
+   used are named as follows:
+
+    Virtual Machine: vminput.txt
+    Lexical Analyzer: lexInput.txt
+    Parser/Code Gen: parseInput.txt
+
+
+2. Compile the file "compiler.c" at the command line by typing:
 	gcc compiler.c -o compile
 
 
-2. There are three supported compiler directives:
+3. There are three supported compiler directives:
 	-l: print the list of lexemes/tokens (scanner output) to the screen
 	-a: print the generated assembly code (parser/codegen output) to the 
             screen
@@ -26,15 +42,15 @@ ReadMe File
             the screen
 
    After compiling, you can use the compiler directives by typing:
-	./compile [compiler directive]
+	./compile [compiler directive(s)]
 
    For example:
-	./compule -l -a -v
+	./compile -l -a -v
 	./compile -v
 	./compile
 
 
-3. Some text editors don't properly display the formatting for the output 
+4. Some text editors don't properly display the formatting for the output 
    files and create weird spacing. My specific output file was tested on Visual
    Studio Code and Microsoft WordPad (click View -> Word wrap -> No wrap)
 

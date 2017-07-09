@@ -1,6 +1,8 @@
-/*
-	Lexical Analyzer
-*/
+// Kenia Castro
+// COP 3402 - Summer 2017
+// Lexical Analyzer
+// Modified from file uploaded to Webcourses
+
 
 #include "header.h"
 
