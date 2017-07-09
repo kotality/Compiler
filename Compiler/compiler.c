@@ -6,10 +6,9 @@
 #include <stdio.h>
 #include "pMachine.h"
 #include "lexAnalyzer.h"
-#include "parser.h"
+// #include "parser.h"
 #include "header.h"
 
-//TEST COMMENT2
 
 int main(int argc, char ** argv)
 {
@@ -27,9 +26,9 @@ int main(int argc, char ** argv)
             vm = 1;
     }
 
-    lexAnalyzer(argc, argv, lex);
-    parser(parse);
     pMachine(vm);
+    lexAnalyzer(lex);
+    // parser(parse);
     
     return 0;
 }
