@@ -24,11 +24,11 @@ FILE *outFile;
 
 // Function prototypes
 void fetch();                          
-void execute();                      
+void execute(int);                      
 int base(int, int);                     
-void opNamePrint(int);                  
-void printProgram();                     
-void printStack(int*, int, int);
+void opNamePrint(int, int);                  
+void printProgram(int);                     
+void printStack(int*, int, int, int);
 int ISA(int, int, int);                 
 
 // An instruction is fetched from the “code” store and placed in the IR register. 
@@ -42,18 +42,31 @@ void fetch()
 
 // Prints out the execution of the program in the virtual machine, showing the 
 // stack and registers pc, bp, and sp
-void execute()
+void execute(int flag)
 {
     int i, check = 0;
 
-    fprintf(outFile, "\n\n");
-    fprintf(outFile, "\t\t\t\t\t\t PC\t BP\t SP\t Stack\n");
-    fprintf(outFile, "Initial Values\t\t\t %d\t %d\t %d\n", PC, BP, SP);
+    if (flag == 1)
+    {
+        printf("\n\n");
+        printf("\t\t\t\t\t\t PC\t BP\t SP\t Stack\n");
+        printf("Initial Values\t\t\t %d\t %d\t %d\n", PC, BP, SP);
+    }
+    
+        fprintf(outFile, "\n\n");
+        fprintf(outFile, "\t\t\t\t\t\t PC\t BP\t SP\t Stack\n");
+        fprintf(outFile, "Initial Values\t\t\t %d\t %d\t %d\n", PC, BP, SP);
     
     while (check != 1)
     {
-        fprintf(outFile, "%d\t ", PC);                           
-        opNamePrint(code[PC].OP);                                   
+        if (flag == 1)
+            printf("%d\t ", PC);   
+        fprintf(outFile, "%d\t ", PC); 
+
+        opNamePrint(code[PC].OP, flag);   
+
+        if (flag == 1)                                
+            printf("%d\t %d\t\t ",code[PC].L, code[PC].M);                                  
         fprintf(outFile, "%d\t %d\t\t ",code[PC].L, code[PC].M);
 
         // Checks if instruction is SIO 03, which ends the program
@@ -63,12 +76,17 @@ void execute()
         fetch();
         
         ISA(code[PC - 1].OP, code[PC - 1].L, code[PC - 1].M);
+
+        if (flag == 1)
+            printf("%d\t %d\t %d\t ", PC, BP, SP);
         fprintf(outFile, "%d\t %d\t %d\t ", PC, BP, SP);
 
-        printStack(stack, SP, BP);
+        printStack(stack, SP, BP, flag);
 
-        fprintf(outFile, "\n");
-    }
+        if (flag == 1)
+            printf("\n");
+        fprintf(outFile, "\n");  
+    }      
 }
 
 // Find a variable in a different Activation Record some L levels down
@@ -86,77 +104,121 @@ int base(int l, int base)
 }
 
 //Gets opcode and prints the operation name
-void opNamePrint(int op)
+void opNamePrint(int op, int flag)
 {
     switch (op)
     {
         case 1:
+            if (flag == 1)
+                printf("lit \t");
             fprintf(outFile,"lit \t");
             break;
         case 2:
+            if (flag == 1)
+                printf("opr \t");
             fprintf(outFile,"opr \t");
             break;
         case 3:
+            if (flag == 1)
+                printf("lod \t");
             fprintf(outFile,"lod \t");
             break;
         case 4:
+            if (flag == 1)
+                printf("sto \t");
             fprintf(outFile,"sto \t");
             break;
         case 5:
+            if (flag == 1)
+                printf("cal \t");
             fprintf(outFile,"cal \t");
             break;
         case 6:
+            if (flag == 1)
+                printf("inc \t");
             fprintf(outFile,"inc \t");
             break;
         case 7:
+            if (flag == 1)
+                printf("jmp \t");
             fprintf(outFile,"jmp \t");
             break;
         case 8:
+            if (flag == 1)
+                printf("jpc \t");
             fprintf(outFile,"jpc \t");
             break;
         case 9:
+            if (flag == 1)
+                printf("sio \t");
             fprintf(outFile,"sio \t");
             break;
         default:
+            if (flag == 1)
+                printf("Not a valid opcode\n");
             fprintf(outFile,"Not a valid opcode\n");
     }
 }
 
 // Prints the output to the screen in interpreted assembly language with line 
 // numbers
-void printProgram()
+void printProgram(int flag)
 {
     int count = 0;
 
+    if (flag == 1)
+        printf("Line OP\t\tL\t M\n");
     fprintf(outFile, "Line OP\t\tL\t M\n");
 
     while (fscanf(inFile, "%d %d %d", &code[count].OP, &code[count].L, &code[count].M) != EOF) 
     {   
-        fprintf(outFile, "%d\t ", count);                               // Line
-        opNamePrint(code[count].OP);                                    // OP
-        fprintf(outFile, "%d\t %d\n",code[count].L, code[count].M);     // L, M                                        
+        if (flag == 1)
+            printf("%d\t ", count);  
+        fprintf(outFile, "%d\t ", count);  
+
+        opNamePrint(code[count].OP, flag);  
+
+        if (flag == 1)                     
+            printf("%d\t %d\n",code[count].L, code[count].M);                                               
+        fprintf(outFile, "%d\t %d\n",code[count].L, code[count].M);
+
         count++;
-    }  
+    }
 }
 
 // Prints the stack with a bracket '|' to separate each Activation Record
-void printStack(int *stack, int SP, int BP)
+void printStack(int *stack, int SP, int BP, int flag)
 {
     int i, j;
-
+    
     if (BP == 1)
     {
         for (i = 1; i <= SP; i++)
+        {
+            if (flag == 1)
+                printf("%d ", stack[i]);
             fprintf(outFile, "%d ", stack[i]); 
+        }
+            
     }
 
     if (BP > 1)
     {
-        printStack(stack, BP-1, stack[BP+2]);
+        printStack(stack, BP-1, stack[BP+2], flag);
 
         // To print the stack when instruction CAL
         if (SP < BP) 
         {
+            if (flag == 1)
+            {
+                printf("| ");
+            
+                printf("%d ", stack[SP + 1]);
+                printf("%d ", stack[SP + 2]);
+                printf("%d ", stack[SP + 3]);
+                printf("%d ", stack[SP + 4]);
+            }
+            
             fprintf(outFile, "| ");
             
             fprintf(outFile, "%d ", stack[SP + 1]);
@@ -166,10 +228,16 @@ void printStack(int *stack, int SP, int BP)
         }
         else
         {
+            if (flag == 1)
+                printf("| ");
             fprintf(outFile, "| ");
 
             for (j = BP; j <= SP; j++)
+            {
+                if (flag == 1)
+                    printf("%d ", stack[j]);
                 fprintf(outFile, "%d ", stack[j]);
+            }      
         }
     } 
 }
@@ -351,11 +419,17 @@ int pMachine(int flag)
     if (outFile == NULL)
         printf("Couldn't open output file\n");
 
+    // printf("Flag: %d\n", flag);
+
     if (flag == 1)
-    {
-        printProgram();
-        execute();
-    }
+        printf("\n============================= pMachine Outout ============================= \n");
+
+    printProgram(flag); 
+
+    execute(flag);
+
+    if (flag == 1)
+        printf("\n============================================================================ \n");
 
     fclose(inFile);
     fclose(outFile);

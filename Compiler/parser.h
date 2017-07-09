@@ -18,10 +18,15 @@ typedef struct
 
 // Some initial values and global variables
 symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
+instruction code[MAX_CODE_LENGTH];
 int tokenArray[MAX_CODE_LENGTH];
 int token;
 int tokenVal = 0;
 int symVal = 0;
+int counter = 0;
+int cx = 0;         // code counter
+FILE *inFileParser;
+FILE *outFileParser;
 
 // Function prototypes
 void program();
@@ -31,13 +36,18 @@ void condtition();
 void expression();
 void term();
 void factor();
-void getNextToken();
+int getNextToken();
+void emit(int, int, int);
 void errorMessage();
 
-void getNextToken()
+int getNextToken()
 {
+    int token;
+
     token = tokenArray[tokenVal];
 	tokenVal++;
+
+    return token;
 }
 
 void program()
@@ -78,8 +88,8 @@ void block()
         token = getNextToken();
     }
 
-    // Int
-    if (token == intsym)
+    // Int should read as var??? <-------------
+    if (token == varsym)
     {
         while (token == commasym)
         {
@@ -96,24 +106,24 @@ void block()
         token = getNextToken();
     }
     
-    // Procedure
-    while (token == procsym)                                // where is procsym?
-    {
-        token = getNextToken();
-        if (token != identsym)
-            errorMessage(4);            //const, var, procedure must be followed by identifier.
+    // Procedure should read as???
+    // while (token == procsym)                                // where is procsym?
+    // {
+    //     token = getNextToken();
+    //     if (token != identsym)
+    //         errorMessage(4);            //const, var, procedure must be followed by identifier.
         
-        token = getNextToken();
-        if (token != semicolonsym)
-             errorMessage(5);           // Semicolon or comma missing.
+    //     token = getNextToken();
+    //     if (token != semicolonsym)
+    //          errorMessage(5);           // Semicolon or comma missing.
 
-        token = getNextToken();
-        block();
-        if (token != semicolonsym)
-            errorMessage(5);            // Semicolon or comma missing.
+    //     token = getNextToken();
+    //     block();
+    //     if (token != semicolonsym)
+    //         errorMessage(5);            // Semicolon or comma missing.
 
-        token = getNextToken();
-    }
+    //     token = getNextToken();
+    // }
 
     statement(); 
 }
@@ -250,6 +260,19 @@ void factor()
         errorMessage(27);               // Invalid factor
 }
 
+void emit(int op, int l, int m)
+{
+    if (cx > MAX_CODE_LENGTH)
+        errorMessage(28);
+    else
+    {
+        code[cx].OP = op; 	    // opcode
+        code[cx].L = l;	        // lex level
+        code[cx].M = m;         // modifier
+        cx++;
+    }
+}
+
 //Error messages for the PL/0 Parser
 void errorMessage(int error)
 {
@@ -335,6 +358,9 @@ void errorMessage(int error)
         case 27:
             printf("Invalid factor.\n");
             break;
+        case 28:
+            printf("Problem with code generation overflow. \n");
+            break;
         default:
             printf("General Error. Need to make an error message for this.\n");
     }
@@ -342,16 +368,23 @@ void errorMessage(int error)
 
 int parser(int flag)
 {
-    inFileParser = fopen(inputFile, "r");
-    outFileParser = fopen(outputFile, "w");
+    int value;
+
+    inFileParser = fopen("count.txt", "r");
+    outFileParser = fopen("parseOutput.txt", "w");
     
     if (inFile == NULL)
         printf("Couldn't open input file. Make sure it's called 'input.txt'\n");
     if (outFile == NULL)
         printf("Couldn't open output file\n");
 
-    if (flag == 1)
-        program();
+    while (fscanf(inFileParser, "%d", &value) != EOF)
+    {
+        tokenArray[counter] = value;
+        counter++;
+    }
+
+    program();
 
     fclose(inFile);
     fclose(outFile);
