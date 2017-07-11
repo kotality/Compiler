@@ -11,12 +11,16 @@ ReadMe File
 3.  lexAnalyzer.h
 4.  parser.h
 5.  header.h
+
 6.  vminput.txt
 7.  vmoutput.txt
+
 8.  lexInput.txt
-9.  lexOutput.txt
-10. parseInput.txt
-11. parseOutput.txt
+9.  symLexListOut.txt
+10. lexListOut.txt
+
+11. scannerOut.txt
+12. parseOutput.txt
 
 
 ================================================================================
@@ -27,7 +31,7 @@ ReadMe File
 
     Virtual Machine: vminput.txt
     Lexical Analyzer: lexInput.txt
-    Parser/Code Gen: parseInput.txt
+    Parser/Code Gen: scannerOut.txt
 
 
 2. Compile the file "compiler.c" at the command line by typing:

@@ -14,11 +14,18 @@ typedef struct
     int addr;           // M address
 }symbol;
 
+// Token struct
+typedef struct 
+{
+    int type;
+    char name[15];
+}tokenType;
+
 // Some initial values and global variables
 symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
 instruction code[MAX_CODE_LENGTH];
-int tokenArray[MAX_CODE_LENGTH];
-int token;
+tokenType token;
+tokenType tokenArray[MAX_CODE_LENGTH];
 int tokenVal = 0;
 int symVal = 0;
 int relOp = 0;
@@ -54,7 +61,7 @@ void program()
     block();
 
     // Period
-    if (token != periodsym)
+    if (token.type != periodsym)
     {
         errorMessage(9);    // Period expected
         printf(" - PROCEDURE\n");
@@ -64,20 +71,20 @@ void program()
 void block()            
 {
     // Const
-    if (token == constsym)
+    if (token.type == constsym)
     {
-        while (token == commasym)
+        do
         {
             token = getNextToken();
-            if (token != identsym)
+            if (token.type != identsym)
                 errorMessage(4);        // const, var, procedure must be followed by identifier
             
             token = getNextToken();
-            if (token != eqlsym)
+            if (token.type != eqlsym)
                 errorMessage(3);        // Identifier must be followed by =
             
             token = getNextToken();
-            if (token != numbersym) 
+            if (token.type != numbersym) 
                 errorMessage(2);        // = must be followed by a number
 
             token = getNextToken();
@@ -87,9 +94,9 @@ void block()
 			symbol_table[symVal].addr = stackCounter;
             symbol_table[symVal].level= currentLevel;
 			symVal++;
-        }
+        }while (token.type == commasym);
 
-        if (token != semicolonsym)
+        if (token.type != semicolonsym)
             errorMessage(5);            // Semicolon or comma missing
         
         token = getNextToken();
@@ -585,12 +592,6 @@ void printTokens(int token, int flag)
             printf("dosym \t");
         fprintf(outFile,"dosym \t");
     }
-    else if (token == callsym)
-    {
-        if (flag == 1)
-            printf("callsym \t");
-        fprintf(outFile,"callsym \t");
-    }
     else if (token == constsym)
     {
         if (flag == 1)
@@ -625,7 +626,7 @@ void printTokens(int token, int flag)
 
 int parser(int flag)
 {
-    inFile = fopen("lexOutput.txt", "r");
+    inFile = fopen("scannerOut.txt", "r");
     outFile = fopen("parseOutput.txt", "w");
     
     if (inFile == NULL)
