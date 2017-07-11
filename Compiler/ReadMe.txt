@@ -22,8 +22,8 @@ ReadMe File
 ================================================================================
 								| Instructions |
 
-1. The input file names are hard-coded. Please make sure the input files being 
-   used are named as follows:
+1. The input file names are hard-coded. Please make sure the input files are 
+   named as follows:
 
     Virtual Machine: vminput.txt
     Lexical Analyzer: lexInput.txt

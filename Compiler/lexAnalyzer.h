@@ -290,11 +290,11 @@ void addToBuffer(char theChar)
 //This method opens the input and output files, and also reads in all the data from the input file.
 void openFiles(/*char * inputFile, char * outputFile*/)
 {
-	inFile = fopen("lexInput.txt", "r");
+	inFile = fopen("count.txt", "r");
 	outFile = fopen("lexOutput.txt", "w");
 
 	if (inFile == NULL)
-        printf("Couldn't open input file. Make sure it's called 'vminput.txt'\n");
+        printf("Couldn't open input file. Make sure it's called 'lexInput.txt'\n");
     if (outFile == NULL)
         printf("Couldn't open output file\n");
 
