@@ -3,6 +3,7 @@
         "pmachine.h": "c",
         "parser.h": "c",
         "stdio.h": "c",
-        "lexanalyzer.h": "c"
+        "lexanalyzer.h": "c",
+        "header.h": "c"
     }
 }
