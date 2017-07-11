@@ -8,6 +8,7 @@
 
 FILE *inFile;
 FILE *outFile;
+FILE *outFile2;
 
 //Internal representation stuff
 int nulsym = 1, identsym = 2, numbersym = 3, plussym = 4,
@@ -15,7 +16,7 @@ minussym = 5, multsym = 6, slashsym = 7, oddsym = 8, eqlsym = 9,
 neqsym = 10, lessym = 11, leqsym = 12, gtrsym = 13, geqsym = 14,
 lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
 periodsym = 19, becomesym = 20, beginsym = 21, endsym = 22, ifsym = 23,
-thensym = 24, whilesym = 25, dosym = 26, callsym = 27, constsym = 28,
+thensym = 24, whilesym = 25, dosym = 26, /*callsym = 27,*/ constsym = 28,
 varsym = 29, writesym = 31, readsym = 32;
 
 //Internal representation mapping, from integer to string.
@@ -47,7 +48,7 @@ char IRMapping[34][64] = {
 "thensym",
 "whilesym",
 "dosym",
-"callsym",
+"?",
 "constsym",
 "varsym",
 "?",
@@ -63,7 +64,7 @@ char reserved[14][32] = {
 "const",
 "var",
 "?",
-"call",
+"?",
 "begin",
 "end",
 "if",
@@ -98,8 +99,8 @@ int mapReserved(int spotInReserved)
 		return constsym;
 	if (spotInReserved == 1)
 		return varsym;
-	if (spotInReserved == 3)
-		return callsym;
+	// if (spotInReserved == 3)
+	// 	return callsym;
 	if (spotInReserved == 4)
 		return beginsym;
 	if (spotInReserved == 5)
@@ -291,11 +292,14 @@ void addToBuffer(char theChar)
 void openFiles(/*char * inputFile, char * outputFile*/)
 {
 	inFile = fopen("count.txt", "r");
-	outFile = fopen("lexOutput.txt", "w");
+	outFile = fopen("symLexListOut.txt", "w");
+	outFile2 = fopen("lexListOut.txt", "w");
 
 	if (inFile == NULL)
         printf("Couldn't open input file. Make sure it's called 'lexInput.txt'\n");
     if (outFile == NULL)
+        printf("Couldn't open output file\n");
+	if (outFile2 == NULL)
         printf("Couldn't open output file\n");
 
 	fseek(inFile, 0, SEEK_END);
@@ -566,7 +570,7 @@ void processText(int flag)
 	}
 	
 	fprintf(outFile, "%s\n\n", symbolicLexemeList);
-	fprintf(outFile, "%s", lexemeList);
+	fprintf(outFile2, "%s", lexemeList);
 }
 
 void echoInput()
