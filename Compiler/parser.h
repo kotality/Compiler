@@ -14,6 +14,7 @@ int symVal = 0;         // symbolTable[]
 int codeVal = 0;        // code[]
 int tokenVal = 0;       // tokenArray[]
 int count = 0;          // removeID_Num function
+int relOp = 0;          // condition switch
 int cx = 0;             // code counter emit function
 
 FILE *inFile;
@@ -52,19 +53,19 @@ void program()
     if (token.type != periodsym)
     {
         errorMessage(9);    // Period expected
-        exit(EXIT_FAILURE);
     }
+    else
+        emit(9, 0, 3);      // End program
 }
 
 void block()            
 {
-    emit(inc,0,1);
-	emit(inc,0,1);
-	emit(inc,0,1);
+    emit(7,0,1);            // JMP
     
     // Const
     if (token.type == constsym)
     {
+        int constop;
         do
         {
             getNextToken();
@@ -81,11 +82,11 @@ void block()
 
             getNextToken();
 
-            // store in the symbol table and increment the counter
-			// symbol_table[symVal] = newConst;
-			// symbol_table[symVal].addr = stackCounter;
-            // symbol_table[symVal].level= currentLevel;
-			// symVal++;
+            // For constants must store kind, name, value
+			symbolTable[symVal].kind = 1;
+			// symbolTable[symVal].name = token.name;
+            // symbolTable[symVal].value= token.type;
+			symVal++;
         }while (token.type == commasym);
 
         if (token.type != semicolonsym)
@@ -97,6 +98,8 @@ void block()
     // Var
     if (token.type == varsym)
     {
+        int varop;
+
         do
         {
             getNextToken();
@@ -104,6 +107,13 @@ void block()
                 errorMessage(4);        // const, var, procedure must be followed by identifier
             
             getNextToken();
+
+            // variables must store kind, name, L, M
+			symbolTable[symVal].kind = 2;
+			// symbolTable[symVal].name = token.name;
+            // symbolTable[symVal].level = ;
+            // symbolTable[symVal].addr = ;
+			symVal++;
         }while (token.type == commasym);
 
         if (token.type != semicolonsym)
@@ -117,7 +127,7 @@ void block()
 
 void statement()        
 {
-    // ident expression
+    // Identifier
     if (token.type == identsym)
     {
         getNextToken();
@@ -147,26 +157,42 @@ void statement()
     // If
     else if (token.type == ifsym)
     {
+        int ctemp;
         getNextToken();
         condtition();
 
         if (token.type != thensym)
             errorMessage(16);           // then expected
+        else    
+            getNextToken();
+        
+        ctemp = cx;
+        emit(8, 0, 0);
 
-        getNextToken();
         statement();
+
+        code[ctemp].M = cx;
     }
     // While
     else if (token.type == whilesym)
     {
+        int cx1 = cx;
+
         getNextToken();
         condtition();
 
+        int cx2 = cx;
+        emit(8, 0, 0);
+
         if (token.type != dosym)
             errorMessage(18);           // do expected
-        
-        getNextToken();
+        else
+            getNextToken();
+
         statement();
+        emit(8, 0, cx1);
+
+        code[cx2].M = cx;
     }
     // Read
     else if (token.type == readsym)
@@ -241,33 +267,58 @@ void condtition()
 
 void expression()
 {
+    int addop;
+
     // Plus and Minus
     if (token.type == plussym || token.type == minussym)
+    {
+        addop = token.type;
         getNextToken();
+        term();
 
-    term();
+        if(addop == minussym)
+            emit(2, 0, 1);  // negate
+    }
+    else
+        term();
 
     while (token.type == plussym || token.type == minussym)
     {
+        addop = token.type;
         getNextToken();
         term();
+
+        if (addop == plussym)
+            emit(2, 0, 2);  // addition
+        else
+            emit(2, 0, 3);  // subtraction
     }
 }
 
 void term()
 {
+    int mulop;
+
     factor();
 
     // Multiply and Divide
     while (token.type == multsym || token.type == slashsym)
     {
+        mulop = token.type;
         getNextToken();
         factor();
+
+        if (mulop == multsym)
+            emit(2, 0, 4);  // multiplication
+        else    
+            emit(2, 0, 5);  // division
     }
 }
 
 void factor()
 {
+    int factop;
+
     if (token.type == identsym)
         getNextToken();
     else if (token.type = numbersym)
