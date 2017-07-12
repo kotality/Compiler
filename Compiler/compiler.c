@@ -6,15 +6,13 @@
 #include <stdio.h>
 #include "pMachine.h"
 #include "lexAnalyzer.h"
-#include "parser.h"
+// #include "parser.h"
+#include "header.h"
 
 int main(int argc, char ** argv)
 {
     int i, lex = 0, parse = 0, vm = 0;
 
-    // -l : print list of lexemes/tokens (scanner output) to the screen
-    ​// -a : print generated assembly code (parser/codegen output) to the screen
-    ​// -v : print virtual machine execution trace (virtual machine output) to the screen
     for (i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-l") == 0)
@@ -27,9 +25,9 @@ int main(int argc, char ** argv)
             vm = 1;
     }
 
-    lexAnalyzer(lex);
-    parser(parse);
     pMachine(vm);
+    lexAnalyzer(lex);
+    // parser(parse);
     
     return 0;
 }

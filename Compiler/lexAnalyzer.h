@@ -1,8 +1,81 @@
-/*
-	Lexical Analyzer
-*/
+// Kenia Castro
+// COP 3402 - Summer 2017
+// Lexical Analyzer
+// Modified from file uploaded to Webcourses
+
 
 #include "header.h"
+
+FILE *inFile;
+FILE *outFile;
+FILE *outFile2;
+
+//Internal representation stuff
+int nulsym = 1, identsym = 2, numbersym = 3, plussym = 4,
+minussym = 5, multsym = 6, slashsym = 7, oddsym = 8, eqlsym = 9,
+neqsym = 10, lessym = 11, leqsym = 12, gtrsym = 13, geqsym = 14,
+lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
+periodsym = 19, becomesym = 20, beginsym = 21, endsym = 22, ifsym = 23,
+thensym = 24, whilesym = 25, dosym = 26, /*callsym = 27,*/ constsym = 28,
+varsym = 29, writesym = 31, readsym = 32;
+
+//Internal representation mapping, from integer to string.
+char IRMapping[34][64] = {
+"ZERO",
+"nulsym",
+"identsym",
+"numbersym",
+"plussym",
+"minussym",
+"multsym",
+"slashsym",
+"oddsym",
+"eqlsym",
+"neqsym",
+"lessym",
+"leqsym",
+"gtrsym",
+"geqsym",
+"lparentsym",
+"rparentsym",
+"commasym",
+"semicolonsym",
+"periodsym",
+"becomesym",
+"beginsym",
+"endsym",
+"ifsym",
+"thensym",
+"whilesym",
+"dosym",
+"?",
+"constsym",
+"varsym",
+"?",
+"writesym",
+"readsym",
+"?",
+
+};
+
+//List of symbols allowed
+char symbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':'};
+char reserved[14][32] = {
+"const",
+"var",
+"?",
+"?",
+"begin",
+"end",
+"if",
+"then",
+"?",
+"while",
+"do",
+"read",
+"write",
+"odd"
+};
 
 //Returns the index in reserved of the string pointed to by [identifier].
 int reservedIndex(char * identifier)
@@ -26,8 +99,8 @@ int mapReserved(int spotInReserved)
 		return constsym;
 	if (spotInReserved == 1)
 		return varsym;
-	if (spotInReserved == 3)
-		return callsym;
+	// if (spotInReserved == 3)
+	// 	return callsym;
 	if (spotInReserved == 4)
 		return beginsym;
 	if (spotInReserved == 5)
@@ -197,6 +270,7 @@ char buffer[16];
 void clearBuffer()
 {
 	int i;
+
 	bp = 0;
 	for(i = 0; i < 16; i++)
 	{
@@ -215,10 +289,18 @@ void addToBuffer(char theChar)
 }
 
 //This method opens the input and output files, and also reads in all the data from the input file.
-void openFiles(char * inputFile, char * outputFile)
+void openFiles(/*char * inputFile, char * outputFile*/)
 {
-	leXinFile = fopen(inputFile, "r");
-	leXoutFile = fopen(outputFile, "w");
+	inFile = fopen("count.txt", "r");
+	outFile = fopen("symLexListOut.txt", "w");
+	outFile2 = fopen("lexListOut.txt", "w");
+
+	if (inFile == NULL)
+        printf("Couldn't open input file. Make sure it's called 'lexInput.txt'\n");
+    if (outFile == NULL)
+        printf("Couldn't open output file\n");
+	if (outFile2 == NULL)
+        printf("Couldn't open output file\n");
 
 	fseek(inFile, 0, SEEK_END);
 	int inputSize = ftell(inFile);
@@ -320,7 +402,7 @@ void processSymbol(char * sym)
 }
 
 //The meat of the program, where the actual fancy important scanning stuff happens!
-void processText()
+void processText(int flag)
 {
 	//Clear out the output arrays...
 	clearLexemeOutput();
@@ -479,9 +561,16 @@ void processText()
 	
 	//Uncomment this to print out the lexeme table as well...
 	//fprintf(outFile, "%s\n", lexemeTable);
+
+	if (flag == 1)
+	{
+		printf("%s\n\n", symbolicLexemeList);
+		printf("%s", lexemeList);
+		printf("\n");
+	}
 	
 	fprintf(outFile, "%s\n\n", symbolicLexemeList);
-	fprintf(outFile, "%s", lexemeList);
+	fprintf(outFile2, "%s", lexemeList);
 }
 
 void echoInput()
@@ -489,20 +578,29 @@ void echoInput()
 	fprintf(outFile, "Source Program:\n%s\n\n", inputChars);
 }
 
-int lexicalAnalyzer(int flag)
+int lexAnalyzer(int flag)
 {
-	if (argc != 3)
-	{
-		printf("Invalid arguments for lexical analyzer!\nUSAGE: ./lexicalAnalyzer [input file] [output file]\n");
-		return 1;
-	}
-	openFiles(argv[1], argv[2]);
+	// if (argc != 3)
+	// {
+	// 	printf("Invalid arguments for lexical analyzer!\nUSAGE: ./lexicalAnalyzer [input file] [output file]\n");
+	// 	return 1;
+	// }
+
+	openFiles(/*argv[1], argv[2]*/);
 	
 	//Uncomment this to print out the input program as well...
 	//echoInput();
-	
+
 	if (flag == 1)
-		processText();
+        printf("============================ lexAnalyzer Outout ============================ \n");
+	
+	processText(flag);
+
+	if (flag == 1)
+        printf("\n============================================================================ \n");
+
+	fclose(inFile);
+	fclose(outFile);
 
 	return 0;
 }

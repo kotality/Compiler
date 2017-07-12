@@ -4,14 +4,14 @@ HW #1 pMachine
 ReadMe File
 
 ============================================================================
-			     | File Contents |
+			                | File Contents |
 
 1. pMachine.c
 2. vminput.txt
 3. vmoutput.txt
 
 =============================================================================
-			      | Instructions |
+			                | Instructions |
 
 1. Please make sure the input file is called 'vminput.txt'.
 
