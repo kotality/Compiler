@@ -4,6 +4,8 @@
         "parser.h": "c",
         "stdio.h": "c",
         "lexanalyzer.h": "c",
-        "header.h": "c"
+        "header.h": "c",
+        "string.h": "c",
+        "stddef.h": "c"
     }
 }

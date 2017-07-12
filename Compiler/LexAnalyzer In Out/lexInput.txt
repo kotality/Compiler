@@ -1,0 +1,15 @@
+/* commenty comment stuff here!!@!//24**1!? */
+
+        
+         
+          
+           
+           
+            
+             
+             
+             
+             
+             
+const var procedure call begin end if then else while do read write + - * / ( ) = , . < > ; 
+<> <= >= hello123 65 := 
