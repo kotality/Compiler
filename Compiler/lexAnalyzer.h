@@ -10,15 +10,6 @@ FILE *inFile;
 FILE *outFile;
 FILE *outFile2;
 
-//Internal representation stuff
-int nulsym = 1, identsym = 2, numbersym = 3, plussym = 4,
-minussym = 5, multsym = 6, slashsym = 7, oddsym = 8, eqlsym = 9,
-neqsym = 10, lessym = 11, leqsym = 12, gtrsym = 13, geqsym = 14,
-lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
-periodsym = 19, becomesym = 20, beginsym = 21, endsym = 22, ifsym = 23,
-thensym = 24, whilesym = 25, dosym = 26, /*callsym = 27,*/ constsym = 28,
-varsym = 29, writesym = 31, readsym = 32;
-
 //Internal representation mapping, from integer to string.
 char IRMapping[34][64] = {
 "ZERO",
@@ -291,7 +282,7 @@ void addToBuffer(char theChar)
 //This method opens the input and output files, and also reads in all the data from the input file.
 void openFiles(/*char * inputFile, char * outputFile*/)
 {
-	inFile = fopen("count.txt", "r");
+	inFile = fopen("lexInput.txt", "r");
 	outFile = fopen("symLexListOut.txt", "w");
 	outFile2 = fopen("lexListOut.txt", "w");
 
@@ -320,7 +311,7 @@ char lexemeList[MAX_CODE_LENGTH];
 char symbolicLexemeList[MAX_CODE_LENGTH];
 
 //Overwrite all data in the lexeme output arrays!
-void clearLexemeOutput()
+void clearLexemeOutput(int flag)
 {
 	int i;
 
@@ -331,8 +322,11 @@ void clearLexemeOutput()
 		symbolicLexemeList[i] = '\0';
 	}
 	strcat(lexemeTable, "Lexeme Table:\nlexeme       token type\n");
-	strcat(lexemeList, "Lexeme List:\n");
-	strcat(symbolicLexemeList, "Symbolic Lexeme List:\n");
+	// if (flag == 1)
+	// {
+	// 	strcat(lexemeList, "Lexeme List:\n");
+	// 	strcat(symbolicLexemeList, "Symbolic Lexeme List:\n");
+	// }
 }
 
 //Insert the lexeme [lexeme] of type [tokenType] nicely into the lexeme table.
@@ -405,7 +399,7 @@ void processSymbol(char * sym)
 void processText(int flag)
 {
 	//Clear out the output arrays...
-	clearLexemeOutput();
+	clearLexemeOutput(flag);
 
 	//Run through the input characters...
 	char nextChar = ' ';
@@ -564,12 +558,12 @@ void processText(int flag)
 
 	if (flag == 1)
 	{
-		printf("%s\n\n", symbolicLexemeList);
-		printf("%s", lexemeList);
+		printf("Symbolic Lexeme List: \n%s\n\n", symbolicLexemeList);
+		printf("Lexeme List: \n%s", lexemeList);
 		printf("\n");
 	}
 	
-	fprintf(outFile, "%s\n\n", symbolicLexemeList);
+	fprintf(outFile, "%s", symbolicLexemeList);
 	fprintf(outFile2, "%s", lexemeList);
 }
 
@@ -592,12 +586,13 @@ int lexAnalyzer(int flag)
 	//echoInput();
 
 	if (flag == 1)
-        printf("============================ lexAnalyzer Outout ============================ \n");
-	
-	processText(flag);
+    {
+        printf("============================================================================== \n");
+        printf("|                             lexAnalyzer Output                             | \n");
+        printf("============================================================================== \n");
+    }
 
-	if (flag == 1)
-        printf("\n============================================================================ \n");
+	processText(flag);
 
 	fclose(inFile);
 	fclose(outFile);

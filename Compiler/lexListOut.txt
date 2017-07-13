@@ -1,2 +1,1 @@
-Lexeme List:
 28 2 increment 9 3 1 17 2 stopValue 9 3 10 18 29 2 counter 18 21 2 counter 20 3 0 18 25 2 counter 11 2 stopValue 26 21 2 counter 20 2 counter 4 2 increment 18 31 2 counter 18 22 22 19 

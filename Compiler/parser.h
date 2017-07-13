@@ -4,34 +4,24 @@
 
 #include "header.h"
 
-// Data structure for symbol
-typedef struct
-{
-    int kind;           // const = 1, var = 2, proc = 3
-    char name[10];      // name up to 11 characters
-    int val;            // number (ASCII value)
-    int level;          // L level
-    int addr;           // M address
-}symbol;
-
-// Token struct
-typedef struct 
-{
-    int type;
-    char name[15];
-}tokenType;
-
 // Some initial values and global variables
-symbol symbol_table[MAX_SYMBOL_TABLE_SIZE];
+symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
 instruction code[MAX_CODE_LENGTH];
-tokenType token;
 tokenType tokenArray[MAX_CODE_LENGTH];
-int tokenVal = 0;
-int symVal = 0;
-int relOp = 0;
-int cx = 0;             // code counter
+
+tokenType token;
+int symVal = 0;         // symbolTable[]
+int codeVal = 0;        // code[]
+int tokenVal = 0;       // tokenArray[]
+int count = 0;          // removeID_Num function
+int relOp = 0;          // condition switch
+int cx = 0;             // code counter emit function
+int printCount = 0;     // helper to print generated code
+int errorFlag = 0;      // To know if hit an error
+
 FILE *inFile;
 FILE *outFile;
+FILE *tokenUpdated;
 
 // Function prototypes
 void program();
@@ -41,218 +31,258 @@ void condtition();
 void expression();
 void term();
 void factor();
-int getNextToken();
+void getNextToken();
 void printTokens(int, int);
 void emit(int, int, int);
 void errorMessage();
+void convert();
+void getTokenType(char*, int);
+void printCode();
 
-// Gets the next token <-------------- Not DONE
-int getNextToken()
+// Gets the next token
+void getNextToken()
 {
     token = tokenArray[tokenVal];
+    // printf("NAME: %s \tTYPE: %d \tSYMBOL: %s \tCOUNT: %d \n",tokenArray[tokenVal].name, tokenArray[tokenVal].type, tokenArray[tokenVal].symbol, tokenVal);
 	tokenVal++;
-
-    return token;
 }
 
 void program()
 {
-    token = getNextToken();
+    getNextToken();
     block();
 
     // Period
     if (token.type != periodsym)
     {
         errorMessage(9);    // Period expected
-        printf(" - PROCEDURE\n");
+        errorFlag = 1;
     }
+    else
+        emit(9, 0, 3);      // End program
 }
 
 void block()            
 {
+    emit(7,0,1);            // JMP
+    
     // Const
     if (token.type == constsym)
     {
         do
         {
-            token = getNextToken();
+            getNextToken();
             if (token.type != identsym)
+            {
                 errorMessage(4);        // const, var, procedure must be followed by identifier
+                errorFlag = 1;
+            }
             
-            token = getNextToken();
+            symbolTable[symVal].kind = 1;
+            strcpy(symbolTable[symVal].name, token.symbol);
+            getNextToken();
+
             if (token.type != eqlsym)
+            {
                 errorMessage(3);        // Identifier must be followed by =
-            
-            token = getNextToken();
+                errorFlag = 1;
+            }
+
+            getNextToken();
             if (token.type != numbersym) 
+            {
                 errorMessage(2);        // = must be followed by a number
+                errorFlag = 1;
+            }
 
-            token = getNextToken();
+            int val = atoi(token.symbol);
+            symbolTable[symVal].val = val;
 
-            // store in the symbol table and increment the counter
-			symbol_table[symVal] = newConst;
-			symbol_table[symVal].addr = stackCounter;
-            symbol_table[symVal].level= currentLevel;
-			symVal++;
+            symVal++;
+            getNextToken();
         }while (token.type == commasym);
 
         if (token.type != semicolonsym)
-            errorMessage(5);            // Semicolon or comma missing
-        
-        token = getNextToken();
-    }
-
-    // Int should read as var??? <-------------
-    if (token == varsym)
-    {
-        while (token == commasym)
         {
-            token = getNextToken();
-            if (token != identsym)
-                errorMessage(4);        // const, var, procedure must be followed by identifier
-            
-            token = getNextToken();
+            errorMessage(5);            // Semicolon or comma missing
+            errorFlag = 1;
         }
 
-        if (token != semicolonsym)
-            errorMessage(5);            // Semicolon or comma missing
-        
-        token = getNextToken();
+        getNextToken();
     }
-    
-    // while (token == procsym)
-    // {
-    //     token = getNextToken();
-    //     if (token != identsym)
-    //         errorMessage(4);            //const, var, procedure must be followed by identifier.
+
+    // Var
+    if (token.type == varsym)
+    {
+        int varCounter = 0;
+
+        do
+        {
+            symbolTable[symVal].kind = 2;
+            symbolTable[symVal].level = 0;
+            symbolTable[symVal].addr = 4 + varCounter;
+
+            getNextToken();
+            if (token.type != identsym)
+            {
+                errorMessage(4);        // const, var, procedure must be followed by identifier
+                errorFlag = 1;
+            }
+
+            strcpy(symbolTable[symVal].name, token.symbol);
+            
+            symVal++;
+            varCounter++;
+            getNextToken();
+        }while (token.type == commasym);
+
+        if (token.type != semicolonsym)
+        {
+            errorMessage(5);            // Semicolon or comma missing
+            errorFlag = 1;
+        }
         
-    //     token = getNextToken();
-    //     if (token != semicolonsym)
-    //          errorMessage(5);           // Semicolon or comma missing.
-
-    //     token = getNextToken();
-    //     block();
-    //     if (token != semicolonsym)
-    //         errorMessage(5);            // Semicolon or comma missing.
-
-    //     token = getNextToken();
-    // }
+        getNextToken();
+    }
 
     statement(); 
 }
 
 void statement()        
 {
-    // ident expression
-    if (token == identsym)
+    // Identifier
+    if (token.type == identsym)
     {
-        token = getNextToken();
-        if (token != becomesym)
+        getNextToken();
+        if (token.type != becomesym)
+        {
             errorMessage(19);           // Incorrect symbol following statement
+            errorFlag = 1;
+        }
 
-        token = getNextToken();
+        getNextToken();
         expression(); 
     }
-    // Call ------- not in EBNF
-    // else if (token == callsym)
-    // {
-    //     token = getNextToken();
-    //     if (token != identsym)
-    //         errorMessage(14);           // call must be followed by an identifier
-
-    //     token = getNextToken();
-    // }
     // Begin 
-    else if (token == beginsym)
+    else if (token.type == beginsym)
     {
-        token = getNextToken();
+        getNextToken();
         statement();
 
-        while (token == semicolonsym)
+        while (token.type == semicolonsym)
         {
-            token = getNextToken();
+            getNextToken();
             statement();
         }
 
-        if (token != endsym)
+        if (token.type != endsym)
+        {
             errorMessage(26);           // end expected
+            errorFlag = 1;
+        }
 
-        token = getNextToken();
+        getNextToken();
     }
     // If
-    else if (token == ifsym)
+    else if (token.type == ifsym)
     {
-        token = getNextToken();
+        int ctemp;
+        getNextToken();
         condtition();
 
-        if (token != thensym)
+        if (token.type != thensym)
+        {
             errorMessage(16);           // then expected
+            errorFlag = 1;
+        }
+        else    
+            getNextToken();
+        
+        ctemp = cx;
+        emit(8, 0, 0);
 
-        token = getNextToken();
         statement();
+
+        code[ctemp].M = cx;
     }
     // While
-    else if (token == whilesym)
+    else if (token.type == whilesym)
     {
-        token = getNextToken();
+        int cx1 = cx;
+
+        getNextToken();
         condtition();
 
-        if (token != dosym)
+        int cx2 = cx;
+        emit(8, 0, 0);
+
+        if (token.type != dosym)
+        {
             errorMessage(18);           // do expected
-        
-        token = getNextToken();
+            errorFlag = 1;
+        }
+        else
+            getNextToken();
+
         statement();
+        emit(8, 0, cx1);
+
+        code[cx2].M = cx;
     }
     // Read
-    else if (token == readsym)
+    else if (token.type == readsym)
     {
-        token = getNextToken();
+        getNextToken();
 
-        if (token != identsym)
+        if (token.type != identsym)
+        {
             errorMessage(14);            // call must be followed by an identifier
+            errorFlag = 1;
+        }
         
-		token = getNextToken();
+		getNextToken();
         
 		// emit(9, 0,2);
-        // token = getNextToken();
+        // getNextToken();
     }
     // Write
-    else if (token == writesym)
+    else if (token.type == writesym)
     {
-        token = getNextToken();
+        getNextToken();
 
-        if (token != identsym)
+        if (token.type != identsym)
+        {
             errorMessage(14);            // call must be followed by an identifier
+            errorFlag = 1;
+        }
         
-        token = getNextToken();
+        getNextToken();
 
         // emit(9,0,1);
-		// token = getNextToken();
-    }
-    // Empty String <---------------- need to check
-    else
-    {
-        token = getNextToken();
+		// getNextToken();
     }
 }
 
 void condtition()
 {
     // Odd
-    if (token == oddsym)
+    if (token.type == oddsym)
     {
-        token = getNextToken();
+        getNextToken();
         expression();
     }
     else
     {
         expression();
 
-        if ((token != eqlsym) && (token != neqsym) && (token != lessym) && 
-            (token != leqsym) && (token != gtrsym) && (token != geqsym))
+        if ((token.type != eqlsym) && (token.type != neqsym) && (token.type != lessym) && 
+            (token.type != leqsym) && (token.type != gtrsym) && (token.type != geqsym))
+        {
             errorMessage(20);           // Relational operator expected
+            errorFlag = 1;
+        }
 
-        switch (token) // <--------------------- NEED TO CHECK THIS
+        switch (token.type) // <--------------------- NEED TO CHECK THIS
         {
             case 9:
                 relOp = eqlsym;
@@ -274,63 +304,97 @@ void condtition()
                 break;
         }
 
-        token = getNextToken();
+        getNextToken();
         expression();
     }
 }
 
 void expression()
 {
+    int addop;
+
     // Plus and Minus
-    if (token == plussym || token == minussym)
-        token = getNextToken();
-
-    term();
-
-    while (token == plussym || token == minussym)
+    if (token.type == plussym || token.type == minussym)
     {
-        token = getNextToken();
+        addop = token.type;
+        getNextToken();
         term();
+
+        if(addop == minussym)
+            emit(2, 0, 1);  // negate
+    }
+    else
+        term();
+
+    while (token.type == plussym || token.type == minussym)
+    {
+        addop = token.type;
+        getNextToken();
+        term();
+
+        if (addop == plussym)
+            emit(2, 0, 2);  // addition
+        else
+            emit(2, 0, 3);  // subtraction
     }
 }
 
 void term()
 {
+    int mulop;
+
     factor();
 
     // Multiply and Divide
-    while (token == multsym || token == slashsym)
+    while (token.type == multsym || token.type == slashsym)
     {
-        token = getNextToken();
+        mulop = token.type;
+        getNextToken();
         factor();
+
+        if (mulop == multsym)
+            emit(2, 0, 4);  // multiplication
+        else    
+            emit(2, 0, 5);  // division
     }
 }
 
 void factor()
 {
-    if (token == identsym)
-        token = getNextToken();
-    else if (token = numbersym)
-        token = getNextToken();
-    else if (token == lparentsym)
+    int factop;
+
+    if (token.type == identsym)
+        getNextToken();
+    else if (token.type = numbersym)
+        getNextToken();
+    else if (token.type == lparentsym)
     {
-        token = getNextToken();
+        getNextToken();
         expression();
 
-        if (token != rparentsym)
+        if (token.type != rparentsym)
+        {
             errorMessage(22);           // Right parenthesis missing
+            errorFlag = 1;
+        }
         
-        token = getNextToken();
+        getNextToken();
     }
     else
+    {
         errorMessage(27);               // Invalid factor
+        errorFlag = 1;
+    }
 }
 
 // For code generation
 void emit(int op, int l, int m)
 {
     if (cx > MAX_CODE_LENGTH)
+    {
         errorMessage(28);
+        errorFlag = 1;
+    }
     else
     {
         code[cx].OP = op; 	    // opcode
@@ -338,6 +402,8 @@ void emit(int op, int l, int m)
         code[cx].M = m;         // modifier
         cx++;
     }
+
+    printCount++;
 }
 
 //Error messages for the PL/0 Parser
@@ -428,222 +494,168 @@ void errorMessage(int error)
         case 28:
             printf("Problem with code generation overflow. \n");
             break;
+        case 29:
+            printf("Error. Invalid type for tokenArray. \n");
+            break;
         default:
             printf("General Error. Need to make an error message for this.\n");
     }
 }
 
-//Gets token int value and prints it as a string
-void printTokens(int token, int flag)
+// Converts symbolic lexeme list into tokens
+void convert()
 {
-    if (token == nulsym)
+    char *temp;
+    char str[MAX_CODE_LENGTH];
+    int compareIdent, compareNum;
+
+    while(fgets(str, sizeof str, inFile) != NULL)
     {
-        if (flag == 1)
-            printf("nulsymn \t");
-        fprintf(outFile,"nulsym \t");
+        temp = strtok(str, " ");    
+        while (temp != NULL)
+        {
+            compareIdent = strcmp(temp, "identsym");
+            compareNum = strcmp(temp, "numbersym");
+
+            if ((compareIdent == 0) || (compareNum == 0))
+            {
+                strcpy(tokenArray[count].name, temp);
+                getTokenType(temp, count);
+                fputs(temp, tokenUpdated);
+                fputs("\n", tokenUpdated);
+
+                // if identsym or numbersym add the identifier that follows
+                temp = strtok(NULL, " ");
+                strcpy(tokenArray[count].symbol, temp);
+            }
+            else
+            {
+                strcpy(tokenArray[count].name, temp);
+                getTokenType(temp, count);
+                fputs(temp, tokenUpdated);
+                fputs("\n", tokenUpdated);
+            }
+            
+            temp = strtok(NULL, " ");
+            count++;
+        }
     }
-    else if (token == identsym)
+}
+
+// Gets tokenArray[].type value from tokenArray[].name value
+void getTokenType(char *name, int count)
+{
+    if (strcmp(name, "nulsym") == 0)
+        tokenArray[count].type = nulsym;
+    else if (strcmp(name, "identsym") == 0)
+        tokenArray[count].type = identsym;
+    else if (strcmp(name, "numbersym") == 0)
+        tokenArray[count].type = numbersym;
+    else if (strcmp(name, "plussym") == 0)
+        tokenArray[count].type = plussym;
+    else if (strcmp(name, "minussym") == 0)
+        tokenArray[count].type = minussym;
+    else if (strcmp(name, "multsym") == 0)
+        tokenArray[count].type = multsym;
+    else if (strcmp(name, "slashsym") == 0)
+        tokenArray[count].type = slashsym;
+    else if (strcmp(name, "oddsym") == 0)
+        tokenArray[count].type = oddsym;
+    else if (strcmp(name, "eqlsym") == 0)
+        tokenArray[count].type = eqlsym;
+    else if (strcmp(name, "neqsym") == 0)
+        tokenArray[count].type = neqsym;
+    else if (strcmp(name, "lessym") == 0)
+        tokenArray[count].type = lessym;
+    else if (strcmp(name, "leqsym") == 0)
+        tokenArray[count].type = leqsym;
+    else if (strcmp(name, "gtrsym") == 0)
+        tokenArray[count].type = gtrsym;
+    else if (strcmp(name, "geqsym") == 0)
+        tokenArray[count].type = geqsym;
+    else if (strcmp(name, "lparentsym") == 0)
+        tokenArray[count].type = lparentsym;
+    else if (strcmp(name, "rparentsym") == 0)
+        tokenArray[count].type = rparentsym;
+    else if (strcmp(name, "commasym") == 0)
+        tokenArray[count].type = commasym;
+    else if (strcmp(name, "semicolonsym") == 0)
+        tokenArray[count].type = semicolonsym;
+    else if (strcmp(name, "periodsym") == 0)
+        tokenArray[count].type = periodsym;
+    else if (strcmp(name, "becomesym") == 0)
+        tokenArray[count].type = becomesym;
+    else if (strcmp(name, "beginsym") == 0)
+        tokenArray[count].type = beginsym;
+    else if (strcmp(name, "endsym") == 0)
+        tokenArray[count].type = endsym;
+    else if (strcmp(name, "ifsym") == 0)
+        tokenArray[count].type = ifsym;
+    else if (strcmp(name, "thensym") == 0)
+        tokenArray[count].type = thensym;
+    else if (strcmp(name, "whilesym") == 0)
+        tokenArray[count].type = whilesym;
+    else if (strcmp(name, "dosym") == 0)
+        tokenArray[count].type = dosym;
+    else if (strcmp(name, "constsym") == 0)
+        tokenArray[count].type = constsym;
+    else if (strcmp(name, "varsym") == 0)
+        tokenArray[count].type = varsym;
+    else if (strcmp(name, "writesym") == 0)
+        tokenArray[count].type = writesym;
+    else if (strcmp(name, "readsym") == 0)
+        tokenArray[count].type = readsym;
+    else 
+        errorMessage(29);           // Invalid type for tokenArray
+}
+
+// Prints generated code to be used in Virtual Machine
+void printCode(int flag)
+{
+    int i;
+    
+    for (i = 0; i < printCount; i++)
     {
+        fprintf(outFile, "%d %d %d\n", code[i].OP, code[i].L, code[i].M);
+
         if (flag == 1)
-            printf("identsym \t");
-        fprintf(outFile,"identsym \t");
-    }
-    else if (token == numbersym)
-    {
-        if (flag == 1)
-            printf("numbersym \t");
-        fprintf(outFile,"numbersym \t");
-    }
-    else if (token == plussym)
-    {
-        if (flag == 1)
-            printf("plussym \t");
-        fprintf(outFile,"plussym \t");
-    }
-    else if (token == minussym)
-    {
-        if (flag == 1)
-            printf("minussym \t");
-        fprintf(outFile,"minussym \t");
-    }
-    else if (token == multsym)
-    {
-        if (flag == 1)
-            printf("multsym \t");
-        fprintf(outFile,"multsym \t");
-    }
-    else if (token == slashsym)
-    {
-        if (flag == 1)
-            printf("slashsym \t");
-        fprintf(outFile,"slashsym \t");
-    }
-    else if (token == oddsym)
-    {
-        if (flag == 1)
-            printf("oddsym \t");
-        fprintf(outFile,"oddsym \t");
-    }
-    else if (token == eqlsym)
-    {
-        if (flag == 1)
-            printf("eqlsym \t");
-        fprintf(outFile,"eqlsym \t");
-    }
-    else if (token == neqsym)
-    {
-        if (flag == 1)
-            printf("neqsym \t");
-        fprintf(outFile,"neqsym \t");
-    }
-    else if (token == lessym)
-    {
-        if (flag == 1)
-            printf("lessym \t");
-        fprintf(outFile,"lessym \t");
-    }
-    else if (token == leqsym)
-    {
-        if (flag == 1)
-            printf("leqsym \t");
-        fprintf(outFile,"leqsym \t");
-    }
-    else if (token == gtrsym)
-    {
-        if (flag == 1)
-            printf("gtrsym \t");
-        fprintf(outFile,"gtrsym \t");
-    }
-    else if (token == geqsym)
-    {
-        if (flag == 1)
-            printf("geqsym \t");
-        fprintf(outFile,"geqsym \t");
-    }
-    else if (token == lparentsym)
-    {
-        if (flag == 1)
-            printf("lparentsym \t");
-        fprintf(outFile,"lparentsym \t");
-    }
-    else if (token == rparentsym)
-    {
-        if (flag == 1)
-            printf("rparentsym \t");
-        fprintf(outFile,"rparentsym \t");
-    }   
-    else if (token == commasym)
-    {
-        if (flag == 1)
-            printf("commasym \t");
-        fprintf(outFile,"commasym \t");
-    }
-    else if (token == semicolonsym)
-    {
-        if (flag == 1)
-            printf("semicolonsym \t");
-        fprintf(outFile,"semicolonsym \t");
-    }
-    else if (token == periodsym)
-    {
-        if (flag == 1)
-            printf("periodsym \t");
-        fprintf(outFile,"periodsym \t");
-    }
-    else if (token == becomesym)
-    {
-        if (flag == 1)
-            printf("becomesym \t");
-        fprintf(outFile,"becomesym \t");
-    }
-    else if (token == beginsym)
-    {
-        if (flag == 1)
-            printf("beginsym \t");
-        fprintf(outFile,"beginsym \t");
-    }
-    else if (token == endsym)
-    {
-        if (flag == 1)
-            printf("endsym \t");
-        fprintf(outFile,"endsym \t");
-    }
-    else if (token == ifsym)
-    {
-        if (flag == 1)
-            printf("ifsym \t");
-        fprintf(outFile,"ifsym \t");
-    }
-    else if (token == thensym)
-    {
-        if (flag == 1)
-            printf("thensym \t");
-        fprintf(outFile,"thensym \t");
-    }
-    else if (token == whilesym)
-    {
-        if (flag == 1)
-            printf("whilesym \t");
-        fprintf(outFile,"whilesym \t");
-    }
-    else if (token == dosym)
-    {
-        if (flag == 1)
-            printf("dosym \t");
-        fprintf(outFile,"dosym \t");
-    }
-    else if (token == constsym)
-    {
-        if (flag == 1)
-            printf("constsym \t");
-        fprintf(outFile,"constsym \t");
-    }
-    else if (token == varsym)
-    {
-        if (flag == 1)
-            printf("varsym \t");
-        fprintf(outFile,"varsym \t");
-    }
-    else if (token == writesym)
-    {
-        if (flag == 1)
-            printf("writesym \t");
-        fprintf(outFile,"writesym \t");
-    }
-    else if (token == readsym)
-    {
-        if (flag == 1)
-            printf("readsym \t");
-        fprintf(outFile,"readsym \t");
-    }
-    else
-    {
-        if (flag == 1)
-            printf("Not a valid token\n");
-        fprintf(outFile,"Not a valid token\n");
+            printf("%d %d %d\n", code[i].OP, code[i].L, code[i].M);
     }
 }
 
 int parser(int flag)
 {
-    inFile = fopen("scannerOut.txt", "r");
+    inFile = fopen("symLexListOut.txt", "r");
     outFile = fopen("parseOutput.txt", "w");
+    tokenUpdated = fopen("tokenUpdated.txt", "w");
     
     if (inFile == NULL)
-        printf("Couldn't open input file. Make sure it's called 'parseInput.txt'\n");
+        printf("Couldn't read input file. Make sure it's called 'symlexListOut.txt'\n");
     if (outFile == NULL)
-        printf("Couldn't open output file\n");
+        printf("Couldn't write to output file. Make sure it's called 'parseOutput.txt'\n");
+    if (tokenUpdated == NULL)
+        printf("Couldn't write to tokenFile. Make sure it's called 'tokenUpdated.txt'\n");
 
     if (flag == 1)
-        printf("============================ parser/Code-Gen Outout ============================ \n");
+    {
+        printf("============================================================================== \n");
+        printf("|                            Parser/Code-Gen Outout                          | \n");
+        printf("============================================================================== \n");
+    }
 
+    convert();
 	program();
+    printCode(flag);
 
-	if (flag == 1)
-        printf("\n================================================================================ \n");
+    if ((flag == 1) && (errorFlag == 0))
+    {
+        printf("\nNo errors, program is syntactically correct.\n\n");
+        printf("============================================================================== \n");
+    }
 
     fclose(inFile);
     fclose(outFile);
+    fclose(tokenUpdated);
 
     return 0;
 }

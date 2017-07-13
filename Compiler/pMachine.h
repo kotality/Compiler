@@ -4,14 +4,6 @@
 
 #include "header.h"
 
-// Struct
-typedef struct
-{
-    int OP;
-    int L;
-    int M;
-}instruction;
-
 // Initial values for PM/0
 int SP = 0;  
 int BP = 1;  
@@ -411,7 +403,7 @@ int ISA(int opcode, int L, int M)
 int pMachine(int flag)
 {
     int count;
-    inFile = fopen("vminput.txt", "r");
+    inFile = fopen("parseOutput.txt", "r");
     outFile = fopen("vmoutput.txt", "w");
     
     if (inFile == NULL)
@@ -422,14 +414,15 @@ int pMachine(int flag)
     // printf("Flag: %d\n", flag);
 
     if (flag == 1)
-        printf("\n============================= pMachine Outout ============================= \n");
+    {
+        printf("============================================================================== \n");
+        printf("|                               pMachine Output                              | \n");
+        printf("============================================================================== \n");
+    }
 
     printProgram(flag); 
 
     execute(flag);
-
-    if (flag == 1)
-        printf("\n============================================================================ \n");
 
     fclose(inFile);
     fclose(outFile);

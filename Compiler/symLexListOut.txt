@@ -1,3 +1,1 @@
-Symbolic Lexeme List:
 constsym identsym increment eqlsym numbersym 1 commasym identsym stopValue eqlsym numbersym 10 semicolonsym varsym identsym counter semicolonsym beginsym identsym counter becomesym numbersym 0 semicolonsym whilesym identsym counter lessym identsym stopValue dosym beginsym identsym counter becomesym identsym counter plussym identsym increment semicolonsym writesym identsym counter semicolonsym endsym endsym periodsym 
-
