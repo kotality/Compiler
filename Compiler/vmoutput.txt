@@ -1,13 +1,17 @@
 Line OP		L	 M
 0	 jmp 	0	 1
-1	 jpc 	0	 4
-2	 opr 	0	 2
-3	 jpc 	0	 1
-4	 sio 	0	 3
+1	 sio 	0	 2
+2	 sio 	0	 2
+3	 opr 	0	 3
+4	 sio 	0	 1
+5	 sio 	0	 3
 
 
 						 PC	 BP	 SP	 Stack
 Initial Values			 0	 1	 0
 0	 jmp 	0	 1		 1	 1	 0	 
-1	 jpc 	0	 4		 4	 1	 -1	 
-4	 sio 	0	 3		 0	 0	 0	 
+1	 sio 	0	 2		 2	 1	 1	 18 
+2	 sio 	0	 2		 3	 1	 2	 18 7 
+3	 opr 	0	 3		 4	 1	 1	 11 
+4	 sio 	0	 1		 5	 1	 0	 
+5	 sio 	0	 3		 0	 0	 0	 

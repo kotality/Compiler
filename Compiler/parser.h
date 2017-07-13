@@ -240,10 +240,10 @@ void statement()
             errorFlag = 1;
         }
         
-		getNextToken();
+		// getNextToken();
         
-		// emit(9, 0,2);
-        // getNextToken();
+		emit(9, 0,2);
+        getNextToken();
     }
     // Write
     else if (token.type == writesym)
@@ -256,10 +256,10 @@ void statement()
             errorFlag = 1;
         }
         
-        getNextToken();
+        // getNextToken();
 
-        // emit(9,0,1);
-		// getNextToken();
+        emit(9,0,1);
+		getNextToken();
     }
 }
 
@@ -306,6 +306,7 @@ void condtition()
 
         getNextToken();
         expression();
+        emit(2, 0, relOp);
     }
 }
 
