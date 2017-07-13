@@ -6,6 +6,7 @@
         "lexanalyzer.h": "c",
         "header.h": "c",
         "string.h": "c",
-        "stddef.h": "c"
+        "stddef.h": "c",
+        "vm.h": "c"
     }
 }
