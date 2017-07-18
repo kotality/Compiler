@@ -28,6 +28,12 @@ int main(int argc, char ** argv)
     pMachine(vm);
     lexAnalyzer(lex);
     parser(parse);
+
+    if (errorFlag == 0)
+    {
+        printf("\nNo errors, program is syntactically correct.\n\n");
+        printf("============================================================================== \n");
+    }
     
     return 0;
 }

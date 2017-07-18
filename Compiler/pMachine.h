@@ -378,13 +378,13 @@ int ISA(int opcode, int L, int M)
         case 9:
             if (M == 1)                 //Print what's on the stack
             {
-                printf("%d\n", stack[SP]);
+                printf("\nTop of Stack: %d\n", stack[SP]);
                 SP = SP - 1;
             }
             else if (M == 2)            // Read input value to stack
             {
                 SP = SP + 1;
-                printf("Input a value to add onto the stack: ");
+                printf("\nInsert input: ");
                 scanf("%d", &readVal);
                 stack[SP] = readVal;
             }
@@ -407,7 +407,7 @@ int pMachine(int flag)
     outFile = fopen("vmoutput.txt", "w");
     
     if (inFile == NULL)
-        printf("Couldn't open input file. Make sure it's called 'vminput.txt'\n");
+        printf("Couldn't open input file. Make sure it's called 'parseOutput.txt'\n");
     if (outFile == NULL)
         printf("Couldn't open output file\n");
 

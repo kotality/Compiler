@@ -17,7 +17,7 @@ int count = 0;          // removeID_Num function
 int relOp = 0;          // condition switch
 int cx = 0;             // code counter emit function
 int printCount = 0;     // helper to print generated code
-int errorFlag = 0;      // To know if hit an error
+
 
 FILE *inFile;
 FILE *outFile;
@@ -240,10 +240,10 @@ void statement()
             errorFlag = 1;
         }
         
-		getNextToken();
+		// getNextToken();
         
-		// emit(9, 0,2);
-        // getNextToken();
+		emit(9, 0,2);
+        getNextToken();
     }
     // Write
     else if (token.type == writesym)
@@ -256,10 +256,10 @@ void statement()
             errorFlag = 1;
         }
         
-        getNextToken();
+        // getNextToken();
 
-        // emit(9,0,1);
-		// getNextToken();
+        emit(9,0,1);
+		getNextToken();
     }
 }
 
@@ -306,6 +306,7 @@ void condtition()
 
         getNextToken();
         expression();
+        emit(2, 0, relOp);
     }
 }
 
@@ -647,11 +648,11 @@ int parser(int flag)
 	program();
     printCode(flag);
 
-    if ((flag == 1) && (errorFlag == 0))
-    {
-        printf("\nNo errors, program is syntactically correct.\n\n");
-        printf("============================================================================== \n");
-    }
+    // if ((flag == 1) && (errorFlag == 0))
+    // {
+    //     printf("\nNo errors, program is syntactically correct.\n\n");
+    //     printf("============================================================================== \n");
+    // }
 
     fclose(inFile);
     fclose(outFile);
