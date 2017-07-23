@@ -1,15 +1,18 @@
 /*
-	This very simple program takes two input values
-	of a and b and then prints out a-b.
 
-	So, when you compile and run this, assuming you
-	enter 18 and then 7, the output should be 11.
+This is an iterative factorial test
+case, which computes 6! = 720
+
 */
 
-var a, b, answer;
+var n, result;
 begin
-	read a;
-	read b;
-	answer := a-b;
-	write answer;
+	result := 1;
+	n := 6;
+	while n > 0 do
+	begin
+		result := result * n;
+		n := n - 1;
+	end;
+	write result;
 end.
