@@ -621,6 +621,8 @@ void printCode(int flag)
 
         if (flag == 1)
             printf("%d %d %d\n", code[i].OP, code[i].L, code[i].M);
+
+        // printf("KIND: %d NAME: %s, VAL: %d LEVEL: %d ADDR: %d\n", symbolTable[i].kind, symbolTable[i].name, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr);
     }
 }
 
