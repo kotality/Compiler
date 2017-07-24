@@ -17,7 +17,9 @@ int count = 0;          // removeID_Num function
 int relOp = 0;          // condition switch
 int cx = 0;             // code counter emit function
 int printCount = 0;     // helper to print generated code
-
+int spaceOffset = 4;    // startin point for symbol table 
+int lexLevel = 0 ;      // keep track of current lex level-- 
+                        // --increase when enter Block and decrease when exit it
 
 FILE *inFile;
 FILE *outFile;
@@ -59,12 +61,14 @@ void program()
         errorFlag = 1;
     }
     else
-        emit(9, 0, 3);      // End program
+        emit(9,0,3);      // End program
 }
 
 void block()            
-{
-    emit(7,0,1);            // JMP
+{ 
+    int jmpaddr = cx;
+    int varCounter = 0;
+    emit(7,0,0);
     
     // Const
     if (token.type == constsym)
@@ -97,6 +101,8 @@ void block()
 
             int val = atoi(token.symbol);
             symbolTable[symVal].val = val;
+            symbolTable[symVal].level = lexLevel;
+            symbolTable[symVal].addr = cx;
 
             symVal++;
             getNextToken();
@@ -114,13 +120,11 @@ void block()
     // Var
     if (token.type == varsym)
     {
-        int varCounter = 0;
-
         do
         {
             symbolTable[symVal].kind = 2;
             symbolTable[symVal].level = 0;
-            symbolTable[symVal].addr = 4 + varCounter;
+            symbolTable[symVal].addr = spaceOffset + varCounter;
 
             getNextToken();
             if (token.type != identsym)
@@ -128,7 +132,7 @@ void block()
                 errorMessage(4);        // const, var, procedure must be followed by identifier
                 errorFlag = 1;
             }
-
+            
             strcpy(symbolTable[symVal].name, token.symbol);
             
             symVal++;
@@ -145,15 +149,36 @@ void block()
         getNextToken();
     }
 
-    statement(); 
+    // printf("space: %d\n", space);
+    // ADDED THIS
+    code[jmpaddr].M = cx;       //<===========================
+    emit(6,0,spaceOffset + varCounter);
+
+    statement();
+
+    // ADDED THIS
+    // emit(2,0,0); 
+    lexLevel--;
 }
 
 void statement()        
 {
+    int i, j = 0;
     // Identifier
     if (token.type == identsym)
     {
+        for (i = 0; i < symVal; i++)
+        {
+            // printf("SYM Name: %s TOK Sym: %s\n",symbolTable[i].name,token.symbol);
+            if (strcmp(symbolTable[i].name,token.symbol) == 0 && symbolTable[i].kind == 2)
+            {
+                j = i;
+            }
+            // printf("i value: %d j value: %d\n", i, j);
+        }
+
         getNextToken();
+
         if (token.type != becomesym)
         {
             errorMessage(19);           // Incorrect symbol following statement
@@ -162,6 +187,11 @@ void statement()
 
         getNextToken();
         expression(); 
+
+        // THIS ADDED IN
+        // printf("j value2: %d\n", j);
+        // printf("EMIT(4,0,%d)\n", symbolTable[j].addr);
+        emit(4,0,symbolTable[j].addr);
     }
     // Begin 
     else if (token.type == beginsym)
@@ -172,7 +202,7 @@ void statement()
         while (token.type == semicolonsym)
         {
             getNextToken();
-            statement();
+            statement();                
         }
 
         if (token.type != endsym)
@@ -195,14 +225,15 @@ void statement()
             errorMessage(16);           // then expected
             errorFlag = 1;
         }
-        else    
-            getNextToken();
+        
+        getNextToken();
         
         ctemp = cx;
-        emit(8, 0, 0);
+        emit(8,0,0);
 
         statement();
 
+        // printf("cx if: %d\n", cx);
         code[ctemp].M = cx;
     }
     // While
@@ -214,19 +245,22 @@ void statement()
         condtition();
 
         int cx2 = cx;
-        emit(8, 0, 0);
+        emit(8,0,0);
 
         if (token.type != dosym)
         {
             errorMessage(18);           // do expected
             errorFlag = 1;
         }
-        else
-            getNextToken();
+        
+        getNextToken();
 
+        // printf("cx1: %d\n", cx1);
         statement();
-        emit(8, 0, cx1);
+        emit(7, 0, cx1);
 
+        // printf("cx: %d\n", cx);
+        // printf("cx2: %d\n", cx2);
         code[cx2].M = cx;
     }
     // Read
@@ -240,9 +274,7 @@ void statement()
             errorFlag = 1;
         }
         
-		// getNextToken();
-        
-		emit(9, 0,2);
+		emit(9,0,2);
         getNextToken();
     }
     // Write
@@ -255,11 +287,17 @@ void statement()
             errorMessage(14);            // call must be followed by an identifier
             errorFlag = 1;
         }
-        
-        // getNextToken();
 
+        expression();
         emit(9,0,1);
-		getNextToken();
+
+        // if (token.type != identsym)
+        // {
+        //     errorMessage(14);            // call must be followed by an identifier
+        //     errorFlag = 1;
+        // }
+
+		// getNextToken();
     }
 }
 
@@ -270,6 +308,7 @@ void condtition()
     {
         getNextToken();
         expression();
+        // emit(2,0,6);        // ODD <===================== CHECK
     }
     else
     {
@@ -282,31 +321,34 @@ void condtition()
             errorFlag = 1;
         }
 
-        switch (token.type) // <--------------------- NEED TO CHECK THIS
+        relOp = token.type;
+
+        getNextToken();
+        expression();
+        
+        switch (token.type)
         {
-            case 9:
+            case 8:
                 relOp = eqlsym;
                 break;
-            case 10:
+            case 9:
                 relOp = neqsym;
+                break;
+            case 10:
+                relOp = lessym;
                 break;
             case 11:
                 relOp = lessym;
                 break;
             case 12:
-                relOp = lessym;
-                break;
-            case 13:
                 relOp = gtrsym;
                 break;
-            case 14:
+            case 13:
                 relOp = geqsym;
                 break;
         }
 
-        getNextToken();
-        expression();
-        emit(2, 0, relOp);
+        emit(2,0,relOp - 1);
     }
 }
 
@@ -362,12 +404,41 @@ void term()
 
 void factor()
 {
-    int factop;
-
     if (token.type == identsym)
+    {
+        int i, j = 0;
+
+        for (i = 0; i < symVal; i++)
+        {
+            if (strcmp(symbolTable[i].name,token.symbol) == 0)
+            {
+                j = i;
+
+                // printf("j value: %d\n", j);
+                //ADDED THIS
+                if (symbolTable[symVal].kind == 1)
+                {
+                    emit(1,0,symbolTable[j].val);
+                    // printf("EMIT(1,0,%d)\n", symbolTable[j].val);
+                }
+                else
+                {
+                    emit(3,0,symbolTable[j].addr);
+                    // printf("EMIT(3,0,%d)\n", symbolTable[j].addr);
+                }
+            }
+        }
+
         getNextToken();
+    }
     else if (token.type = numbersym)
+    {
+        int num = atoi(token.symbol);
+        // printf("token symbol: %d\n",num);
+
+        emit(1,0,num);
         getNextToken();
+    }
     else if (token.type == lparentsym)
     {
         getNextToken();
@@ -613,7 +684,7 @@ void getTokenType(char *name, int count)
 // Prints generated code to be used in Virtual Machine
 void printCode(int flag)
 {
-    int i;
+    int i, j;
     
     for (i = 0; i < printCount; i++)
     {
@@ -622,6 +693,9 @@ void printCode(int flag)
         if (flag == 1)
             printf("%d %d %d\n", code[i].OP, code[i].L, code[i].M);
     }
+
+    // for (j = 0; j < symVal; j++)
+    //     printf("KIND: %d NAME: %s, VAL: %d LEVEL: %d ADDR: %d\n", symbolTable[j].kind, symbolTable[j].name, symbolTable[j].val, symbolTable[j].level, symbolTable[j].addr);
 }
 
 int parser(int flag)

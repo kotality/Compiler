@@ -21,7 +21,7 @@ int base(int, int);
 void opNamePrint(int, int);                  
 void printProgram(int);                     
 void printStack(int*, int, int, int);
-int ISA(int, int, int);                 
+int ISA(int, int, int, int);                 
 
 // An instruction is fetched from the “code” store and placed in the IR register. 
 // Afterwards, the PC is incremented by 1 to point to the next instruction to be 
@@ -67,7 +67,7 @@ void execute(int flag)
 
         fetch();
         
-        ISA(code[PC - 1].OP, code[PC - 1].L, code[PC - 1].M);
+        ISA(code[PC - 1].OP, code[PC - 1].L, code[PC - 1].M, flag);
 
         if (flag == 1)
             printf("%d\t %d\t %d\t ", PC, BP, SP);
@@ -235,7 +235,7 @@ void printStack(int *stack, int SP, int BP, int flag)
 }
 
 // The instruction set architecture
-int ISA(int opcode, int L, int M)
+int ISA(int opcode, int L, int M, int flag)
 {
     int readVal;
 
@@ -378,7 +378,10 @@ int ISA(int opcode, int L, int M)
         case 9:
             if (M == 1)                 //Print what's on the stack
             {
-                printf("\nTop of Stack: %d\n", stack[SP]);
+                if (flag == 1)
+                    ;
+                else
+                    printf("\nStack output: %d\n", stack[SP]);
                 SP = SP - 1;
             }
             else if (M == 2)            // Read input value to stack

@@ -11,7 +11,8 @@
             "browse": {
                 "path": [
                     "/usr/include",
-                    "/usr/local/include"
+                    "/usr/local/include",
+                    "${workspaceRoot}"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
@@ -29,7 +30,8 @@
             "browse": {
                 "path": [
                     "/usr/include",
-                    "/usr/local/include"
+                    "/usr/local/include",
+                    "${workspaceRoot}"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
@@ -39,8 +41,8 @@
         {
             "name": "Win32",
             "includePath": [
-                "C:/MinGW/include",
-                "C:/MinGW/lib/gcc/mingw32/5.3.0"
+                "C:/MinGW/lib/gcc/mingw32/5.3.0",
+                "C:/MinGW/include"
             ],
             "defines": [
                 "_DEBUG",
@@ -50,11 +52,13 @@
                 "path": [
                     "C:/MinGW/include",
                     "C:/MinGW/lib/gcc/mingw32/5.3.0"
+                    
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             },
             "intelliSenseMode": "msvc-x64"
         }
-    ]
+    ],
+    "version": 2
 }
