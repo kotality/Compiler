@@ -8,6 +8,7 @@
 int SP = 0;  
 int BP = 1;  
 int PC = 0; 
+int stackOut = 0;
 instruction IR;
 int stack[MAX_STACK_HEIGHT] = {0};
 instruction code[MAX_CODE_LENGTH];
@@ -378,10 +379,7 @@ int ISA(int opcode, int L, int M, int flag)
         case 9:
             if (M == 1)                 //Print what's on the stack
             {
-                if (flag == 1)
-                    ;
-                else
-                    printf("\nStack output: %d\n", stack[SP]);
+                stackOut = stack[SP];
                 SP = SP - 1;
             }
             else if (M == 2)            // Read input value to stack
@@ -426,6 +424,8 @@ int pMachine(int flag)
     printProgram(flag); 
 
     execute(flag);
+
+    printf("Stack output: %d\n", stackOut);
 
     fclose(inFile);
     fclose(outFile);

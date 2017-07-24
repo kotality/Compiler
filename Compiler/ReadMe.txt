@@ -62,8 +62,8 @@ ReadMe File
 	    ./compile [compiler directive(s)]
 
     For example:
+        ./compile -l
         ./compile -l -a -v
-        ./compile -v
         ./compile
 
 

@@ -18,7 +18,7 @@ int relOp = 0;          // condition switch
 int cx = 0;             // code counter emit function
 int printCount = 0;     // helper to print generated code
 int spaceOffset = 4;    // startin point for symbol table 
-int lexLevel = 0 ;      // keep track of current lex level-- 
+int lexLevel = 0;       // keep track of current lex level-- 
                         // --increase when enter Block and decrease when exit it
 
 FILE *inFile;
@@ -68,6 +68,7 @@ void block()
 { 
     int jmpaddr = cx;
     int varCounter = 0;
+    lexLevel++;
     emit(7,0,0);
     
     // Const
@@ -123,7 +124,7 @@ void block()
         do
         {
             symbolTable[symVal].kind = 2;
-            symbolTable[symVal].level = 0;
+            symbolTable[symVal].level = lexLevel;
             symbolTable[symVal].addr = spaceOffset + varCounter;
 
             getNextToken();
@@ -167,6 +168,12 @@ void statement()
     // Identifier
     if (token.type == identsym)
     {
+        if (symVal == 0)
+        {
+            errorMessage(11);           // Undeclared identifier
+            errorFlag = 1;
+        }
+
         for (i = 0; i < symVal; i++)
         {
             // printf("SYM Name: %s TOK Sym: %s\n",symbolTable[i].name,token.symbol);
@@ -191,7 +198,7 @@ void statement()
         // THIS ADDED IN
         // printf("j value2: %d\n", j);
         // printf("EMIT(4,0,%d)\n", symbolTable[j].addr);
-        emit(4,0,symbolTable[j].addr);
+        emit(4,lexLevel - symbolTable[j].level,symbolTable[j].addr);
     }
     // Begin 
     else if (token.type == beginsym)
@@ -273,8 +280,19 @@ void statement()
             errorMessage(14);            // call must be followed by an identifier
             errorFlag = 1;
         }
+
+        for (i = 0; i < symVal; i++)
+        {
+            // printf("SYM Name: %s TOK Sym: %s\n",symbolTable[i].name,token.symbol);
+            if (strcmp(symbolTable[i].name,token.symbol) == 0 && symbolTable[i].kind == 2)
+            {
+                j = i;
+            }
+            // printf("i value: %d j value: %d\n", i, j);
+        }
         
 		emit(9,0,2);
+        emit(4, lexLevel - symbolTable[j].level, symbolTable[j].addr);
         getNextToken();
     }
     // Write
@@ -348,7 +366,7 @@ void condtition()
                 break;
         }
 
-        emit(2,0,relOp - 1);
+        emit(2,lexLevel,relOp - 1);
     }
 }
 
@@ -376,9 +394,9 @@ void expression()
         term();
 
         if (addop == plussym)
-            emit(2, 0, 2);  // addition
+            emit(2, lexLevel + 1, 2);  // addition
         else
-            emit(2, 0, 3);  // subtraction
+            emit(2, lexLevel + 1, 3);  // subtraction
     }
 }
 
@@ -396,9 +414,9 @@ void term()
         factor();
 
         if (mulop == multsym)
-            emit(2, 0, 4);  // multiplication
+            emit(2, lexLevel + 1, 4);  // multiplication
         else    
-            emit(2, 0, 5);  // division
+            emit(2, lexLevel + 1, 5);  // division
     }
 }
 
@@ -408,6 +426,7 @@ void factor()
     {
         int i, j = 0;
 
+        // printf("symval: %d\n", symVal);
         for (i = 0; i < symVal; i++)
         {
             if (strcmp(symbolTable[i].name,token.symbol) == 0)
@@ -415,16 +434,17 @@ void factor()
                 j = i;
 
                 // printf("j value: %d\n", j);
-                //ADDED THIS
-                if (symbolTable[symVal].kind == 1)
+                
+                if (symbolTable[i].kind == 1)
                 {
                     emit(1,0,symbolTable[j].val);
                     // printf("EMIT(1,0,%d)\n", symbolTable[j].val);
                 }
-                else
+                else if (symbolTable[i].kind == 2)
                 {
-                    emit(3,0,symbolTable[j].addr);
-                    // printf("EMIT(3,0,%d)\n", symbolTable[j].addr);
+                    emit(3,lexLevel - symbolTable[j].level,symbolTable[j].addr);
+                    // printf("EMIT(3,%d, addr)\n", symbolTable[j].level);
+                    // printf("lexlevel: %d\n", lexLevel);
                 }
             }
         }
@@ -678,7 +698,10 @@ void getTokenType(char *name, int count)
     else if (strcmp(name, "readsym") == 0)
         tokenArray[count].type = readsym;
     else 
+    {
         errorMessage(29);           // Invalid type for tokenArray
+        errorFlag = 1;
+    }
 }
 
 // Prints generated code to be used in Virtual Machine
@@ -686,14 +709,17 @@ void printCode(int flag)
 {
     int i, j;
     
-    for (i = 0; i < printCount; i++)
-    {
-        fprintf(outFile, "%d %d %d\n", code[i].OP, code[i].L, code[i].M);
+    // printf("errorFlag parser %d\n", errorFlag);
+    // {
+        for (i = 0; i < printCount; i++)
+        {
+            fprintf(outFile, "%d %d %d\n", code[i].OP, code[i].L, code[i].M);
 
-        if (flag == 1)
-            printf("%d %d %d\n", code[i].OP, code[i].L, code[i].M);
-    }
+            if (flag == 1 && errorFlag != 1)
+                printf("%d %d %d\n", code[i].OP, code[i].L, code[i].M);
+        }
 
+    // printf("symval %d\n", symVal);
     // for (j = 0; j < symVal; j++)
     //     printf("KIND: %d NAME: %s, VAL: %d LEVEL: %d ADDR: %d\n", symbolTable[j].kind, symbolTable[j].name, symbolTable[j].val, symbolTable[j].level, symbolTable[j].addr);
 }
@@ -720,13 +746,11 @@ int parser(int flag)
 
     convert();
 	program();
-    printCode(flag);
 
-    // if ((flag == 1) && (errorFlag == 0))
-    // {
-    //     printf("\nNo errors, program is syntactically correct.\n\n");
-    //     printf("============================================================================== \n");
-    // }
+    if (errorFlag == 1)
+        exit(0);
+        
+    printCode(flag);
 
     fclose(inFile);
     fclose(outFile);
