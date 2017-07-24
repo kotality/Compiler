@@ -13,7 +13,7 @@
 #define MAX_IDENTIFIER_LENGTH 15
 #define MAX_SYMBOL_TABLE_SIZE 2000
 
-int errorFlag = 0;      // To know if hit an error
+int errorFlag;      // To know if hit an error
 
 //Internal representation stuff
 int nulsym = 1, identsym = 2, numbersym = 3, plussym = 4,

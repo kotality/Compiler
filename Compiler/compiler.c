@@ -12,6 +12,7 @@
 int main(int argc, char ** argv)
 {
     int i, lex = 0, parse = 0, vm = 0;
+    int errorFlag;
 
     for (i = 0; i < argc; i++)
     {
@@ -25,9 +26,9 @@ int main(int argc, char ** argv)
             vm = 1;
     }
 
-    pMachine(vm);
     lexAnalyzer(lex);
     parser(parse);
+    pMachine(vm);
 
     if (errorFlag == 0)
     {
