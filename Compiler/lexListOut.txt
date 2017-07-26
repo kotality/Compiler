@@ -1,1 +1,1 @@
-29 2 answer 18 30 2 add 18 28 2 a 9 3 21 17 2 b 9 3 12 18 21 2 answer 20 2 a 4 2 b 18 22 18 21 27 2 add 18 31 2 answer 22 19 
+29 2 result 17 2 arg 18 30 2 fac 18 29 2 n 18 21 2 n 20 2 arg 18 23 2 n 12 3 1 24 21 2 result 20 3 1 18 22 33 21 2 arg 20 2 n 5 3 1 18 27 2 fac 18 2 result 20 2 n 6 2 result 18 22 18 22 18 21 2 arg 20 3 6 18 27 2 fac 18 31 2 result 18 22 19 

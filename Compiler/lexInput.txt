@@ -1,19 +1,48 @@
 /*
-	Add two numbers! The result of running
-	this code through your compiler should be
-	33, meaning when the VM is run, it should
-	print a 33 out.
+	This program computes 6! recursively. The
+	result of running this through your compiler
+	should be a 720 being written to the terminal.
 */
 
-var answer;
+var result, arg;
 
-procedure add;
-	const a=21, b=12;
+procedure fac;
+	var n;
 	begin
-		answer := a+b;
+		/* Memorize what we were given! */
+		n := arg;
+		
+		if n <= 1 then
+		begin
+			result := 1;
+		end
+		else
+		begin
+			arg := n-1;
+			call fac;
+			result := n * result;
+		end;
 	end;
 
 begin
-	call add;
-	write answer
+	/* 
+       You should be able to change this number to
+       compute different factorials, or even replace
+       this line with read arg; to make the program
+       read in which factorial to compute. 
+
+       Don't do negative factorials pls. (Though if
+       you were to for some reason force arg to be
+       negative, the result should just be 1)
+
+       Don't do positive integers greater than 12. If
+       you put positive integers greater than 12 here
+       then truly terrible, unspeakable things may or
+       may not occur, as you enter the very scary land
+       of ~~~integer overflow~~~.
+    */
+	arg := 6;
+
+	call fac;
+	write result;
 end.

@@ -4,6 +4,7 @@
         "parser.h": "c",
         "string.h": "c",
         "lexicalanalyzer.c": "cpp",
-        "header.h": "c"
+        "header.h": "c",
+        "pmachine.h": "c"
     }
 }

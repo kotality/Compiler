@@ -8,9 +8,10 @@
 int SP = 0;  
 int BP = 1;  
 int PC = 0; 
-int stackOut = 0;
+int out = 0;
 instruction IR;
 int stack[MAX_STACK_HEIGHT] = {0};
+int stackOut[MAX_STACK_HEIGHT] = {0};
 instruction code[MAX_CODE_LENGTH];
 FILE *inFile;
 FILE *outFile;
@@ -379,8 +380,9 @@ int ISA(int opcode, int L, int M, int flag)
         case 9:
             if (M == 1)                 //Print what's on the stack
             {
-                stackOut = stack[SP];
+                stackOut[out] = stack[SP];
                 SP = SP - 1;
+                out++;
             }
             else if (M == 2)            // Read input value to stack
             {
@@ -403,7 +405,7 @@ int ISA(int opcode, int L, int M, int flag)
 
 int pMachine(int flag)
 {
-    int count;
+    int count, i;
     inFile = fopen("parseOutput.txt", "r");
     outFile = fopen("vmoutput.txt", "w");
     
@@ -425,7 +427,8 @@ int pMachine(int flag)
 
     execute(flag);
 
-    printf("Stack output: %d\n", stackOut);
+    for (i = 0; i < out; i++)
+        printf("Stack output: %d\n", stackOut[i]);
 
     fclose(inFile);
     fclose(outFile);
