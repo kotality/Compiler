@@ -1,0 +1,9 @@
+/*
+	This case is wrong. We never declare a variable a,
+	yet we try to assign to it.
+*/
+
+begin
+	a := 6;
+	write a;
+end.

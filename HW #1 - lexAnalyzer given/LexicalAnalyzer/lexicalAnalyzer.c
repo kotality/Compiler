@@ -1,14 +1,28 @@
-// Kenia Castro
-// COP 3402 - Summer 2017
-// Lexical Analyzer
-// Modified from file uploaded to Webcourses
+/*
+	Lexical Analyzer
+*/
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 
-#include "header.h"
+#define MAX_NUMBER_LENGTH 5
+#define MAX_IDENTIFIER_LENGTH 11
 
-FILE *inFile;
-FILE *outFile;
-FILE *outFile2;
+#define MAX_CODE_LENGTH 32768
+
+
+//~~~Internal Representation Stuff~~~
+
+//Internal representation stuff
+int nulsym = 1, identsym = 2, numbersym = 3, plussym = 4,
+minussym = 5, multsym = 6, slashsym = 7, oddsym = 8, eqlsym = 9,
+neqsym = 10, lessym = 11, leqsym = 12, gtrsym = 13, geqsym = 14,
+lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
+periodsym = 19, becomesym = 20, beginsym = 21, endsym = 22, ifsym = 23,
+thensym = 24, whilesym = 25, dosym = 26, callsym = 27, constsym = 28,
+varsym = 29, writesym = 31, readsym = 32;
 
 //Internal representation mapping, from integer to string.
 char IRMapping[34][64] = {
@@ -42,10 +56,10 @@ char IRMapping[34][64] = {
 "callsym",
 "constsym",
 "varsym",
-"procsym",
+"?",
 "writesym",
 "readsym",
-"elsesym",
+"?",
 
 };
 
@@ -54,13 +68,13 @@ char symbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':
 char reserved[14][32] = {
 "const",
 "var",
-"procedure",
+"?",
 "call",
 "begin",
 "end",
 "if",
 "then",
-"else",
+"?",
 "while",
 "do",
 "read",
@@ -70,10 +84,8 @@ char reserved[14][32] = {
 
 //Returns the index in reserved of the string pointed to by [identifier].
 int reservedIndex(char * identifier)
-{  
-	int i;
-
-	for(i = 0; i < 14; i++)
+{
+	for(int i = 0; i < 14; i++)
 	{
 		if (strcmp(reserved[i], identifier) == 0)
 		{
@@ -90,8 +102,6 @@ int mapReserved(int spotInReserved)
 		return constsym;
 	if (spotInReserved == 1)
 		return varsym;
-	if (spotInReserved == 2)
-		return procsym;
 	if (spotInReserved == 3)
 		return callsym;
 	if (spotInReserved == 4)
@@ -102,8 +112,6 @@ int mapReserved(int spotInReserved)
 		return ifsym;
 	if (spotInReserved == 7)
 		return thensym;
-	if (spotInReserved == 8)
-		return elsesym;
 	if (spotInReserved == 9)
 		return whilesym;
 	if (spotInReserved == 10)
@@ -144,6 +152,7 @@ int mapSymbol(char * symbol)
 		return gtrsym;
 	if (strcmp(symbol, ";") == 0)
 		return semicolonsym;
+
 	if (strcmp(symbol, "<>") == 0)
 		return neqsym;
 	if (strcmp(symbol, "<=") == 0)
@@ -196,9 +205,7 @@ int isInvisible(char theChar)
 //Returns 1 iff [theChar] is a valid symbol, 0 otherwise.
 int isSymbol(char theChar)
 {
-	int i;
-
-	for(i = 0; i < 13; i++)
+	for(int i = 0; i < 13; i++)
 	{
 		if (symbols[i] == theChar)
 			return 1;
@@ -230,6 +237,9 @@ void throwError(char * message)
 int ip = 0;
 char inputChars[MAX_CODE_LENGTH];
 int inputCharsSize;
+
+//The output file
+FILE * outFile;
 
 //Gets a character from the input; enforces that the character is valid iff ignoreValidity is 0.
 char getChar(int ignoreValidity)
@@ -263,10 +273,8 @@ char buffer[16];
 //Empty out that buffer!
 void clearBuffer()
 {
-	int i;
-
 	bp = 0;
-	for(i = 0; i < 16; i++)
+	for(int i = 0; i < 16; i++)
 	{
 		buffer[i] = '\0';
 	}
@@ -283,18 +291,10 @@ void addToBuffer(char theChar)
 }
 
 //This method opens the input and output files, and also reads in all the data from the input file.
-void openFiles(/*char * inputFile, char * outputFile*/)
+void openFiles(char * inputFile, char * outputFile)
 {
-	inFile = fopen("lexInput.txt", "r");
-	outFile = fopen("symLexListOut.txt", "w");
-	outFile2 = fopen("lexListOut.txt", "w");
-
-	if (inFile == NULL)
-        printf("Couldn't open input file. Make sure it's called 'lexInput.txt'\n");
-    if (outFile == NULL)
-        printf("Couldn't open output file\n");
-	if (outFile2 == NULL)
-        printf("Couldn't open output file\n");
+	FILE * inFile = fopen(inputFile, "r");
+	outFile = fopen(outputFile, "w");
 
 	fseek(inFile, 0, SEEK_END);
 	int inputSize = ftell(inFile);
@@ -314,22 +314,17 @@ char lexemeList[MAX_CODE_LENGTH];
 char symbolicLexemeList[MAX_CODE_LENGTH];
 
 //Overwrite all data in the lexeme output arrays!
-void clearLexemeOutput(int flag)
+void clearLexemeOutput()
 {
-	int i;
-
-	for(i = 0; i < MAX_CODE_LENGTH; i++)
+	for(int i = 0; i < MAX_CODE_LENGTH; i++)
 	{
 		lexemeTable[i] = '\0';
 		lexemeList[i] = '\0';
 		symbolicLexemeList[i] = '\0';
 	}
 	strcat(lexemeTable, "Lexeme Table:\nlexeme       token type\n");
-	// if (flag == 1)
-	// {
-	// 	strcat(lexemeList, "Lexeme List:\n");
-	// 	strcat(symbolicLexemeList, "Symbolic Lexeme List:\n");
-	// }
+	strcat(lexemeList, "Lexeme List:\n");
+	strcat(symbolicLexemeList, "Symbolic Lexeme List:\n");
 }
 
 //Insert the lexeme [lexeme] of type [tokenType] nicely into the lexeme table.
@@ -399,10 +394,10 @@ void processSymbol(char * sym)
 }
 
 //The meat of the program, where the actual fancy important scanning stuff happens!
-void processText(int flag)
+void processText()
 {
 	//Clear out the output arrays...
-	clearLexemeOutput(flag);
+	clearLexemeOutput();
 
 	//Run through the input characters...
 	char nextChar = ' ';
@@ -558,16 +553,9 @@ void processText(int flag)
 	
 	//Uncomment this to print out the lexeme table as well...
 	//fprintf(outFile, "%s\n", lexemeTable);
-
-	if (flag == 1)
-	{
-		printf("Symbolic Lexeme List: \n%s\n\n", symbolicLexemeList);
-		printf("Lexeme List: \n%s", lexemeList);
-		printf("\n");
-	}
 	
-	fprintf(outFile, "%s", symbolicLexemeList);
-	fprintf(outFile2, "%s", lexemeList);
+	fprintf(outFile, "%s\n\n", symbolicLexemeList);
+	fprintf(outFile, "%s", lexemeList);
 }
 
 void echoInput()
@@ -575,30 +563,18 @@ void echoInput()
 	fprintf(outFile, "Source Program:\n%s\n\n", inputChars);
 }
 
-int lexAnalyzer(int flag)
+int main(int argc, char ** argv)
 {
-	// if (argc != 3)
-	// {
-	// 	printf("Invalid arguments for lexical analyzer!\nUSAGE: ./lexicalAnalyzer [input file] [output file]\n");
-	// 	return 1;
-	// }
-
-	openFiles(/*argv[1], argv[2]*/);
+	if (argc != 3)
+	{
+		printf("Invalid arguments for lexical analyzer!\nUSAGE: ./lexicalAnalyzer [input file] [output file]\n");
+		return 1;
+	}
+	openFiles(argv[1], argv[2]);
 	
 	//Uncomment this to print out the input program as well...
 	//echoInput();
-
-	if (flag == 1)
-    {
-        printf("============================================================================== \n");
-        printf("|                             lexAnalyzer Output                             | \n");
-        printf("============================================================================== \n");
-    }
-
-	processText(flag);
-
-	fclose(inFile);
-	fclose(outFile);
-
+	
+	processText();
 	return 0;
 }

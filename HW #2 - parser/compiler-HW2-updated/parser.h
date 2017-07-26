@@ -151,46 +151,6 @@ void block()
         getNextToken();
     }
 
-    // Proc
-    if (token.type == procsym)
-    {
-        // emit(7,0,0);
-
-        getNextToken();
-        if (token.type != identsym)
-        {
-            errorMessage(4);        // const, var, procedure must be followed by identifier
-            errorFlag = 1;
-        }
-
-        symbolTable[symVal].kind = 3;
-        symbolTable[symVal].level = lexLevel;                   
-        symbolTable[symVal].addr = cx;
-        strcpy(symbolTable[symVal].name, token.symbol);
-
-        getNextToken();
-
-        lexLevel++;
-
-        if (token.type != semicolonsym)
-        {
-            errorMessage(5);            // Semicolon or comma missing
-            errorFlag = 1;
-        }
-
-        getNextToken();
-        block();
-
-        if (token.type != semicolonsym)
-        {
-            errorMessage(5);            // Semicolon or comma missing
-            errorFlag = 1;
-        }
-        
-        symVal++;
-        getNextToken();
-    }
-
     // printf("space: %d\n", space);
     // ADDED THIS
     code[jmpaddr].M = cx;       //<===========================
@@ -241,35 +201,6 @@ void statement()
         // printf("EMIT(4,0,%d)\n", symbolTable[j].addr);
         emit(4,lexLevel - symbolTable[j].level,symbolTable[j].addr);
     }
-    // Call
-    else if (token.type == callsym)
-    {
-        if (symVal == 0)
-        {
-            errorMessage(11);           // Undeclared identifier
-            errorFlag = 1;
-        }
-
-        for (i = 0; i < symVal; i++)
-        {
-            if (strcmp(symbolTable[i].name,token.symbol) == 0 && symbolTable[i].kind == 2)
-            {
-                j = i;
-            }
-        }
-
-        getNextToken();
-        if (token.type != identsym)
-        {
-            errorMessage(4);        // const, var, procedure must be followed by identifier
-            errorFlag = 1;
-        }
-
-        if (symbolTable[symVal].kind == 3)
-            emit(5, lexLevel - symbolTable[j].level,symbolTable[j].addr);
-
-        getNextToken();
-    }
     // Begin 
     else if (token.type == beginsym)
     {
@@ -304,13 +235,6 @@ void statement()
         }
         
         getNextToken();
-        // statement();
-
-        // if (token.type == elsesym)
-        // {
-        //     getNextToken();
-        //     statement();
-        // }
         
         ctemp = cx;
         emit(8,0,0);
@@ -787,16 +711,12 @@ void getTokenType(char *name, int count)
         tokenArray[count].type = becomesym;
     else if (strcmp(name, "beginsym") == 0)
         tokenArray[count].type = beginsym;
-    else if (strcmp(name, "callsym") == 0)
-        tokenArray[count].type = callsym;
     else if (strcmp(name, "endsym") == 0)
         tokenArray[count].type = endsym;
     else if (strcmp(name, "ifsym") == 0)
         tokenArray[count].type = ifsym;
     else if (strcmp(name, "thensym") == 0)
         tokenArray[count].type = thensym;
-    else if (strcmp(name, "elsesym") == 0)
-        tokenArray[count].type = elsesym;
     else if (strcmp(name, "whilesym") == 0)
         tokenArray[count].type = whilesym;
     else if (strcmp(name, "dosym") == 0)
@@ -805,8 +725,6 @@ void getTokenType(char *name, int count)
         tokenArray[count].type = constsym;
     else if (strcmp(name, "varsym") == 0)
         tokenArray[count].type = varsym;
-    else if (strcmp(name, "procsym") == 0)
-        tokenArray[count].type = procsym;
     else if (strcmp(name, "writesym") == 0)
         tokenArray[count].type = writesym;
     else if (strcmp(name, "readsym") == 0)
@@ -843,7 +761,7 @@ int parser(int flag)
     inFile = fopen("symLexListOut.txt", "r");
     outFile = fopen("parseOutput.txt", "w");
     tokenUpdated = fopen("tokenUpdated.txt", "w");
-    errorFile = fopen("error.txt", "w");
+    errorFile = fopen("errors.txt", "w");
     
     if (inFile == NULL)
         printf("Couldn't read input file. Make sure it's called 'symlexListOut.txt'\n");
@@ -852,7 +770,7 @@ int parser(int flag)
     if (tokenUpdated == NULL)
         printf("Couldn't write to tokenFile. Make sure it's called 'tokenUpdated.txt'\n");
     if (errorFile == NULL)
-        printf("Couldn't write to errorFile. Make sure it's called 'error.txt'\n");
+        printf("Couldn't write to errorFile. Make sure it's called 'errors.txt\n");
 
     if (flag == 1)
     {

@@ -20,7 +20,7 @@ ReadMe File
 10. lexListOut.txt
 
 11. tokenUpdated.txt
-12. error.txt
+12. errors.txt
 
 
 ================================================================================
