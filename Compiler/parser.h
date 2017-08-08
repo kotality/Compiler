@@ -1,6 +1,4 @@
-// Kenia Castro
-// COP 3402 - Summer 2017
-// HW #3 - PL/0 Compiler
+// Parser and Code Generator 
 
 #include "header.h"
 

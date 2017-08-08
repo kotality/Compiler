@@ -1,6 +1,4 @@
-// Kenia Castro
-// COP 3402 - Summer 2017
-// HW #1 - pMachine
+// Virtual Machine
 
 #include "header.h"
 
