@@ -1,8 +1,5 @@
-// Kenia Castro
-// COP 3402 - Summer 2017
 // Lexical Analyzer
-// Modified from file uploaded to Webcourses
-
+// Modified from file uploaded to WC
 
 #include "header.h"
 
@@ -39,13 +36,13 @@ char IRMapping[34][64] = {
 "thensym",
 "whilesym",
 "dosym",
-"?",
+"callsym",
 "constsym",
 "varsym",
-"?",
+"procsym",
 "writesym",
 "readsym",
-"?",
+"elsesym",
 
 };
 
@@ -54,13 +51,13 @@ char symbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':
 char reserved[14][32] = {
 "const",
 "var",
-"?",
-"?",
+"procedure",
+"call",
 "begin",
 "end",
 "if",
 "then",
-"?",
+"else",
 "while",
 "do",
 "read",
@@ -70,7 +67,7 @@ char reserved[14][32] = {
 
 //Returns the index in reserved of the string pointed to by [identifier].
 int reservedIndex(char * identifier)
-{
+{  
 	int i;
 
 	for(i = 0; i < 14; i++)
@@ -90,8 +87,10 @@ int mapReserved(int spotInReserved)
 		return constsym;
 	if (spotInReserved == 1)
 		return varsym;
-	// if (spotInReserved == 3)
-	// 	return callsym;
+	if (spotInReserved == 2)
+		return procsym;
+	if (spotInReserved == 3)
+		return callsym;
 	if (spotInReserved == 4)
 		return beginsym;
 	if (spotInReserved == 5)
@@ -100,6 +99,8 @@ int mapReserved(int spotInReserved)
 		return ifsym;
 	if (spotInReserved == 7)
 		return thensym;
+	if (spotInReserved == 8)
+		return elsesym;
 	if (spotInReserved == 9)
 		return whilesym;
 	if (spotInReserved == 10)
@@ -140,7 +141,6 @@ int mapSymbol(char * symbol)
 		return gtrsym;
 	if (strcmp(symbol, ";") == 0)
 		return semicolonsym;
-
 	if (strcmp(symbol, "<>") == 0)
 		return neqsym;
 	if (strcmp(symbol, "<=") == 0)

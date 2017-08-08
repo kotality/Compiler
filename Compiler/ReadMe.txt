@@ -1,6 +1,3 @@
-Kenia Castro
-COP 3402 - Summer 2017
-HW #2 Parser - Parser & Code Generator
 ReadMe File
 
 ================================================================================
@@ -20,6 +17,7 @@ ReadMe File
 10. lexListOut.txt
 
 11. tokenUpdated.txt
+12. error.txt
 
 
 ================================================================================
@@ -38,13 +36,16 @@ ReadMe File
             write answer;
         end.
 
-2.  The order of input files:
+2.  The order of input/output files:
         Lexical Analyzer: 
             - Input:  lexInput.txt
+            - Output: lexListOut.txt, symLexListOut.txt
         Parser/Code Gen: 
             - Input:  symLexListOut.txt (created from lexAnalyzer.h)
+            - Output: parseOuput.txt
         Virtual Machine:
             - Input:  parseOutput.txt (created from parser.h)    
+            - Output: vmoutput.txt
 
 
 2.  Compile the file "compiler.c" at the command line by typing:

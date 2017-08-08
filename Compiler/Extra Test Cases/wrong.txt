@@ -1,0 +1,25 @@
+/*
+	This should throw an error somewhere along the lines of
+    "undeclared identifier" when compiling, because the main
+    code tries to call a procedure that is in a deeper
+    lexicographical level.
+*/
+
+const one=1, two=2;
+procedure very;
+    procedure scary;
+        begin
+            write two;
+        end;
+    begin
+        write one;
+        call scary;
+    end;
+
+begin
+    /*
+        If you change "scary" to "very", then running it through
+        your compiler should print a 1 and then a 2.
+    */
+    call scary;
+end.

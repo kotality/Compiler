@@ -1,6 +1,3 @@
-// Kenia Castro
-// COP 3402 - Summer 2017
-// HW #2 - Parser and Code Generator
 // Main file for compiler driver
 
 #include <stdio.h>

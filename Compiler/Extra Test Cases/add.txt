@@ -1,0 +1,19 @@
+/*
+	Add two numbers! The result of running
+	this code through your compiler should be
+	33, meaning when the VM is run, it should
+	print a 33 out.
+*/
+
+var answer;
+
+procedure add;
+	const a=21, b=12;
+	begin
+		answer := a+b;
+	end;
+
+begin
+	call add;
+	write answer
+end.

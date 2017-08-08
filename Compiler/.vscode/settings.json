@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "stdio.h": "c",
-        "parser.h": "c"
+        "parser.h": "c",
+        "string.h": "c",
+        "lexicalanalyzer.c": "cpp",
+        "header.h": "c",
+        "pmachine.h": "c"
     }
 }

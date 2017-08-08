@@ -1,6 +1,4 @@
-// Kenia Castro
-// COP 3402 - Summer 2017
-// HW #2 - Parser and Code Generator
+// Parser and Code Generator 
 
 #include "header.h"
 
@@ -24,6 +22,7 @@ int lexLevel = 0;       // keep track of current lex level--
 FILE *inFile;
 FILE *outFile;
 FILE *tokenUpdated;
+FILE *errorFile;
 
 // Function prototypes
 void program();
@@ -60,8 +59,8 @@ void program()
         errorMessage(9);    // Period expected
         errorFlag = 1;
     }
-    else
-        emit(9,0,3);      // End program
+    
+    emit(9,0,3);      // End program
 }
 
 void block()            
@@ -83,8 +82,10 @@ void block()
                 errorFlag = 1;
             }
             
+            // printf("symval const: %d\n", symVal);
             symbolTable[symVal].kind = 1;
             strcpy(symbolTable[symVal].name, token.symbol);
+            symbolTable[symVal].level = lexLevel;
             getNextToken();
 
             if (token.type != eqlsym)
@@ -102,8 +103,8 @@ void block()
 
             int val = atoi(token.symbol);
             symbolTable[symVal].val = val;
-            symbolTable[symVal].level = lexLevel;
-            symbolTable[symVal].addr = cx;
+            
+            // symbolTable[symVal].addr = cx;
 
             symVal++;
             getNextToken();
@@ -123,10 +124,6 @@ void block()
     {
         do
         {
-            symbolTable[symVal].kind = 2;
-            symbolTable[symVal].level = lexLevel;
-            symbolTable[symVal].addr = spaceOffset + varCounter;
-
             getNextToken();
             if (token.type != identsym)
             {
@@ -134,6 +131,10 @@ void block()
                 errorFlag = 1;
             }
             
+            // printf("symval const: %d\n", symVal);
+            symbolTable[symVal].kind = 2;
+            symbolTable[symVal].level = lexLevel;
+            symbolTable[symVal].addr = spaceOffset + varCounter;
             strcpy(symbolTable[symVal].name, token.symbol);
             
             symVal++;
@@ -146,28 +147,69 @@ void block()
             errorMessage(5);            // Semicolon or comma missing
             errorFlag = 1;
         }
+
+        getNextToken();
+    }
+
+    // Proc
+    while (token.type == procsym)
+    {
+        getNextToken();
+        if (token.type != identsym)
+        {
+            errorMessage(4);        // const, var, procedure must be followed by identifier
+            errorFlag = 1;
+        }
+
+        // printf("symval proc: %d\n", symVal);
+        symbolTable[symVal].kind = 3;
+        symbolTable[symVal].level = lexLevel;                   
+        symbolTable[symVal].addr = cx;
+        strcpy(symbolTable[symVal].name, token.symbol);
+
+        getNextToken();
+
+        // lexLevel++;
+
+        if (token.type != semicolonsym)
+        {
+            errorMessage(5);            // Semicolon or comma missing
+            errorFlag = 1;
+        }
+
+        getNextToken();
+
+        symVal++;
+        // printf("symval proc2: %d\n", symVal);
+        block();
+
+        if (token.type != semicolonsym)
+        {
+            errorMessage(5);            // Semicolon or comma missing
+            errorFlag = 1;
+        }
         
         getNextToken();
     }
 
     // printf("space: %d\n", space);
-    // ADDED THIS
-    code[jmpaddr].M = cx;       //<===========================
+    code[jmpaddr].M = cx;      
     emit(6,0,spaceOffset + varCounter);
 
     statement();
 
-    // ADDED THIS
-    // emit(2,0,0); 
+    if (token.type != periodsym)
+        emit(2,0,0); 
     lexLevel--;
 }
 
 void statement()        
 {
-    int i, j = 0;
     // Identifier
     if (token.type == identsym)
     {
+        int i, j = 0;
+
         if (symVal == 0)
         {
             errorMessage(11);           // Undeclared identifier
@@ -184,6 +226,13 @@ void statement()
             // printf("i value: %d j value: %d\n", i, j);
         }
 
+        if (symbolTable[j].kind != 2)
+        {
+            printf("In statement() identsym: ");
+            errorMessage(12);             // Assignment to constant or procedure is not allowed
+            errorFlag == 1;
+        }
+
         getNextToken();
 
         if (token.type != becomesym)
@@ -198,7 +247,56 @@ void statement()
         // THIS ADDED IN
         // printf("j value2: %d\n", j);
         // printf("EMIT(4,0,%d)\n", symbolTable[j].addr);
+        if ((lexLevel - symbolTable[j].level) < 0)
+        {
+            errorMessage(11);             // Undeclared identifier
+            errorFlag = 1;
+        }
+
         emit(4,lexLevel - symbolTable[j].level,symbolTable[j].addr);
+    }
+    // Call
+    else if (token.type == callsym)
+    {
+        int i, j = 0;
+
+        getNextToken();
+        if (token.type != identsym)
+        {
+            errorMessage(4);            // const, var, procedure must be followed by identifier
+            errorFlag = 1;
+        }
+
+        if (symVal == 0)
+        {
+            errorMessage(11);           // Undeclared identifier
+            errorFlag = 1;
+        }
+
+        for (i = 0; i < symVal; i++)
+        {
+            if (strcmp(symbolTable[i].name,token.symbol) == 0 && symbolTable[i].kind == 3)
+            {
+                j = i;
+            }
+        }
+
+        if (symbolTable[j].kind != 3)
+        {
+            printf("In statement() callsym: ");
+            errorMessage(12);           // Assignment to constant or procedure is not allowed
+            errorFlag = 1;              
+        }
+
+        if ((lexLevel - symbolTable[j].level) < 0)
+        {
+            errorMessage(11);             // Undeclared identifier
+            errorFlag = 1;
+        }
+
+        emit(5, lexLevel - symbolTable[j].level,symbolTable[j].addr);
+
+        getNextToken();
     }
     // Begin 
     else if (token.type == beginsym)
@@ -223,7 +321,7 @@ void statement()
     // If
     else if (token.type == ifsym)
     {
-        int ctemp;
+        int ctemp, ctemp2;
         getNextToken();
         condtition();
 
@@ -232,16 +330,26 @@ void statement()
             errorMessage(16);           // then expected
             errorFlag = 1;
         }
-        
-        getNextToken();
-        
+
         ctemp = cx;
         emit(8,0,0);
 
-        statement();
+        getNextToken();
+        statement();   
 
         // printf("cx if: %d\n", cx);
-        code[ctemp].M = cx;
+        if (token.type != elsesym)
+            code[ctemp].M = cx;
+        else
+        {
+            ctemp2 = cx;
+            emit(7,0,0);
+            code[ctemp].M = cx;
+
+            getNextToken();
+            statement();
+            code[ctemp2].M = cx;
+        }        
     }
     // While
     else if (token.type == whilesym)
@@ -273,6 +381,7 @@ void statement()
     // Read
     else if (token.type == readsym)
     {
+        int i, j = 0;
         getNextToken();
 
         if (token.type != identsym)
@@ -290,14 +399,29 @@ void statement()
             }
             // printf("i value: %d j value: %d\n", i, j);
         }
+
+        if (symbolTable[j].kind != 2)
+        {
+            errorMessage(12);           // Assignment to constant or procedure is not allowed
+            errorFlag = 1;
+        }
         
 		emit(9,0,2);
+
+        if ((lexLevel - symbolTable[j].level) < 0)
+        {
+            errorMessage(11);             // Undeclared identifier
+            errorFlag = 1;
+        }
+
         emit(4, lexLevel - symbolTable[j].level, symbolTable[j].addr);
         getNextToken();
     }
     // Write
     else if (token.type == writesym)
     {
+        int i, j = 0;
+
         getNextToken();
 
         if (token.type != identsym)
@@ -306,16 +430,41 @@ void statement()
             errorFlag = 1;
         }
 
-        expression();
-        emit(9,0,1);
+        for (i = 0; i < symVal; i++)
+        {
+            // printf("SYM Name: %s TOK Sym: %s\n",symbolTable[i].name,token.symbol);
+            if (strcmp(symbolTable[i].name,token.symbol) == 0)                      // removed .kind == 2 check
+            {
+                j = i;
+            }
+            // printf("i value: %d j value: %d\n", i, j);
+        }
 
-        // if (token.type != identsym)
-        // {
-        //     errorMessage(14);            // call must be followed by an identifier
-        //     errorFlag = 1;
-        // }
+        if (symbolTable[j].kind == 1)
+        {
+            emit(1,0, symbolTable[j].val);
+            emit(9,0,1);
+        }
+        else if (symbolTable[j].kind == 2)
+        {
+            if ((lexLevel - symbolTable[j].level) < 0)
+            {
+                errorMessage(11);             // Undeclared identifier
+                errorFlag = 1;
+            }
 
-		// getNextToken();
+            emit(3, lexLevel - symbolTable[j].level, symbolTable[j].addr);
+            emit(9,0,1);
+        }
+        else
+        {
+            errorMessage(30);               // Cannot write to a procedure
+            errorFlag = 1;
+        }
+
+        // expression();
+
+		getNextToken();
     }
 }
 
@@ -326,7 +475,7 @@ void condtition()
     {
         getNextToken();
         expression();
-        // emit(2,0,6);        // ODD <===================== CHECK
+        emit(2,0,6);                // ODD 
     }
     else
     {
@@ -366,7 +515,7 @@ void condtition()
                 break;
         }
 
-        emit(2,lexLevel,relOp - 1);
+        emit(2,0,relOp - 1);
     }
 }
 
@@ -394,9 +543,9 @@ void expression()
         term();
 
         if (addop == plussym)
-            emit(2, lexLevel + 1, 2);  // addition
+            emit(2, 0, 2);  // addition
         else
-            emit(2, lexLevel + 1, 3);  // subtraction
+            emit(2, 0, 3);  // subtraction
     }
 }
 
@@ -414,9 +563,9 @@ void term()
         factor();
 
         if (mulop == multsym)
-            emit(2, lexLevel + 1, 4);  // multiplication
+            emit(2, 0, 4);  // multiplication
         else    
-            emit(2, lexLevel + 1, 5);  // division
+            emit(2, 0, 5);  // division
     }
 }
 
@@ -442,9 +591,20 @@ void factor()
                 }
                 else if (symbolTable[i].kind == 2)
                 {
+                    if ((lexLevel - symbolTable[j].level) < 0)
+                    {
+                        errorMessage(11);             // Undeclared identifier
+                        errorFlag = 1;
+                    }
+
                     emit(3,lexLevel - symbolTable[j].level,symbolTable[j].addr);
                     // printf("EMIT(3,%d, addr)\n", symbolTable[j].level);
                     // printf("lexlevel: %d\n", lexLevel);
+                }
+                else
+                {
+                    errorMessage(21);   // Expression must not contain a procedure identifier
+                    errorFlag = 1;
                 }
             }
         }
@@ -505,92 +665,126 @@ void errorMessage(int error)
     {
         case 1:
             printf("Use = instead of :=.\n");
+            fprintf(errorFile, "Use = instead of :=.\n");
             break;
         case 2:
             printf("= must be followed by a number.\n");
+            fprintf(errorFile, "= must be followed by a number.\n");
             break;
         case 3:
             printf("Identifier must be followed by =.\n");
+            fprintf(errorFile, "Identifier must be followed by =.\n");
             break;
         case 4:
             printf("const, var, procedure must be followed by identifier.\n");
+            fprintf(errorFile, "const, var, procedure must be followed by identifier.\n");
             break;
         case 5:
             printf("Semicolon or comma missing.\n");
+            fprintf(errorFile, "Semicolon or comma missing.\n");
             break;
         case 6:
             printf("Incorrect symbol after procedure declaration.\n");
+            fprintf(errorFile, "Incorrect symbol after procedure declaration.\n");
             break;
         case 7:
             printf("Statement expected.\n");
+            fprintf(errorFile, "Statement expected.\n");
             break;
         case 8:
             printf("Incorrect symbol after statement part in block.\n");
+            fprintf(errorFile, "Incorrect symbol after statement part in block.\n");
             break;
         case 9:
             printf("Period expected.\n");
+            fprintf(errorFile, "Period expected.\n");
             break;
         case 10:
             printf("Semicolon between statements missing.\n");
+            fprintf(errorFile, "Semicolon between statements missing.\n");
             break;
         case 11:
             printf("Undeclared identifier.\n");
+            fprintf(errorFile, "Undeclared identifier.\n");
             break;
         case 12:
             printf("Assignment to constant or procedure is not allowed.\n");
+            fprintf(errorFile, "Assignment to constant or procedure is not allowed.\n");
             break;
         case 13:
             printf("Assignment operator expected.\n");
+            fprintf(errorFile, "Assignment operator expected.\n");
             break;
         case 14:
             printf("call must be followed by an identifier.\n");
+            fprintf(errorFile, "call must be followed by an identifier.\n");
             break;
         case 15:
             printf("Call of a constant or variable is meaningless.\n");
+            fprintf(errorFile, "Call of a constant or variable is meaningless.\n");
             break;
         case 16:
             printf("then expected.\n");
+            fprintf(errorFile, "then expected.\n");
             break;
         case 17:
             printf("Semicolon or } expected.\n");
+            fprintf(errorFile, "Semicolon or } expected.\n");
+            break;
         case 18:
             printf("do expected.\n");
+            fprintf(errorFile, "do expected.\n");
             break;
         case 19:
             printf("Incorrect symbol following statement.\n");
+            fprintf(errorFile, "Incorrect symbol following statement.\n");
             break;
         case 20:
             printf("Relational operator expected.\n");
+            fprintf(errorFile, "Relational operator expected.\n");
             break;
         case 21:
             printf("Expression must not contain a procedure identifier.\n");
+            fprintf(errorFile, "Expression must not contain a procedure identifier.\n");
             break;
         case 22:
             printf("Right parenthesis missing.\n");
+            fprintf(errorFile, "Right parenthesis missing.\n");
             break;
         case 23: 
             printf("The preceding factor cannot begin with this symbol.\n");
+            fprintf(errorFile, "The preceding factor cannot begin with this symbol.\n");
             break;
         case 24:
             printf("An expression cannot begin with this symbol.\n");
+            fprintf(errorFile, "An expression cannot begin with this symbol.\n");
             break;
         case 25: 
             printf("This number is too large.\n");
+            fprintf(errorFile, "This number is too large.\n");
             break;
         case 26:
             printf("end expected.\n");
+            fprintf(errorFile, "end expected.\n");
             break;
         case 27:
             printf("Invalid factor.\n");
+            fprintf(errorFile, "Invalid factor.\n");
             break;
         case 28:
             printf("Problem with code generation overflow. \n");
+            fprintf(errorFile, "Problem with code generation overflow. \n");
             break;
         case 29:
             printf("Error. Invalid type for tokenArray. \n");
+            fprintf(errorFile, "Error. Invalid type for tokenArray. \n");
             break;
+        case 30:
+            printf("Cannot write to a procedure. \n");
+            fprintf(errorFile, "Cannot write to a procedure. \n");
         default:
             printf("General Error. Need to make an error message for this.\n");
+            fprintf(errorFile, "General Error. Need to make an error message for this.\n");
     }
 }
 
@@ -679,12 +873,16 @@ void getTokenType(char *name, int count)
         tokenArray[count].type = becomesym;
     else if (strcmp(name, "beginsym") == 0)
         tokenArray[count].type = beginsym;
+    else if (strcmp(name, "callsym") == 0)
+        tokenArray[count].type = callsym;
     else if (strcmp(name, "endsym") == 0)
         tokenArray[count].type = endsym;
     else if (strcmp(name, "ifsym") == 0)
         tokenArray[count].type = ifsym;
     else if (strcmp(name, "thensym") == 0)
         tokenArray[count].type = thensym;
+    else if (strcmp(name, "elsesym") == 0)
+        tokenArray[count].type = elsesym;
     else if (strcmp(name, "whilesym") == 0)
         tokenArray[count].type = whilesym;
     else if (strcmp(name, "dosym") == 0)
@@ -693,6 +891,8 @@ void getTokenType(char *name, int count)
         tokenArray[count].type = constsym;
     else if (strcmp(name, "varsym") == 0)
         tokenArray[count].type = varsym;
+    else if (strcmp(name, "procsym") == 0)
+        tokenArray[count].type = procsym;
     else if (strcmp(name, "writesym") == 0)
         tokenArray[count].type = writesym;
     else if (strcmp(name, "readsym") == 0)
@@ -729,6 +929,7 @@ int parser(int flag)
     inFile = fopen("symLexListOut.txt", "r");
     outFile = fopen("parseOutput.txt", "w");
     tokenUpdated = fopen("tokenUpdated.txt", "w");
+    errorFile = fopen("error.txt", "w");
     
     if (inFile == NULL)
         printf("Couldn't read input file. Make sure it's called 'symlexListOut.txt'\n");
@@ -736,6 +937,8 @@ int parser(int flag)
         printf("Couldn't write to output file. Make sure it's called 'parseOutput.txt'\n");
     if (tokenUpdated == NULL)
         printf("Couldn't write to tokenFile. Make sure it's called 'tokenUpdated.txt'\n");
+    if (errorFile == NULL)
+        printf("Couldn't write to errorFile. Make sure it's called 'error.txt'\n");
 
     if (flag == 1)
     {
