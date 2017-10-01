@@ -1,5 +1,5 @@
 // Lexical Analyzer
-// Modified from file uploaded to WC
+// Modified from file uploaded by Dr. Montagne
 
 #include "header.h"
 
